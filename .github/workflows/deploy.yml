@@ -1,0 +1,61 @@
+name: Deploy to deploy branch
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Astro
+        run: npm run build
+
+      - name: Deploy to deploy branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # 先把构建产物移出工作区：deploy 分支跟踪过同名旧文件时，
+          # checkout 会用旧跟踪文件静默覆盖未跟踪的新文件，随后被 git rm 删掉
+          mv dist /tmp/dist
+
+          # 拉取远程 deploy 分支，基于最新历史追加提交（保证服务器 git pull 可快进更新）
+          git fetch origin deploy:deploy 2>/dev/null || true
+
+          if git show-ref --verify --quiet refs/heads/deploy; then
+            git checkout deploy
+          else
+            git checkout --orphan deploy
+          fi
+
+          # 清空分支上旧文件
+          git rm -rf . --quiet 2>/dev/null || true
+
+          # 将构建产物复制到分支根目录
+          cp -r /tmp/dist/. .
+
+          git add -A
+          # 无内容变化时跳过提交
+          git diff --cached --quiet || git commit -m "deploy: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          git push origin deploy

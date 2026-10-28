@@ -29,7 +29,15 @@ Astro 锁定在 7.4.1：7.4.2 起要求 Node >= 22.23.4。
 
 ## 部署
 
-将 `dist/` 发布到服务器即可。Nginx 示例：
+push 到 main 后 GitHub Actions 自动构建，并把 `dist/` 产物提交到 `deploy` 分支（见 `.github/workflows/deploy.yml`）。服务器端只跟踪 `deploy` 分支，更新时 `git pull` 即可：
+
+```bash
+sudo git clone -b deploy https://github.com/liminalselves/official-site /opt/official-site
+# 之后每次更新
+cd /opt/official-site && sudo git pull
+```
+
+Nginx 托管该目录，示例：
 
 ```nginx
 server {
