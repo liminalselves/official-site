@@ -1,0 +1,322 @@
+---
+import { projects } from '../data/site';
+
+// Community card: abstract Misskey timeline that scrolls one full set per loop.
+const NOTE_H = 54;
+const NOTE_STEP = 64;
+const notes = [
+  { name: 44, lines: [128, 86], react: true },
+  { agent: true, name: 52, lines: [] as number[] },
+  { name: 38, lines: [140, 112, 64] },
+  { name: 50, lines: [118, 72], react: true },
+];
+
+// Aliya card: COSMOS console heartbeat trace, one beat every 80 units.
+const BEAT = 80;
+const beat = (x: number) =>
+  `L${x + 18} 110 L${x + 24} 104 L${x + 30} 110 L${x + 36} 110 L${x + 40} 86 L${x + 45} 128 L${x + 49} 110 L${x + 58} 110 L${x + 65} 105 L${x + 72} 110 L${x + BEAT} 110`;
+const ecgPath = `M40 110 ${Array.from({ length: 7 }, (_, i) => beat(40 + i * BEAT)).join(' ')}`;
+const gauges = ['O2', 'H2O', 'ENG'];
+---
+
+<section id="projects" class="projects light" aria-labelledby="projects-title">
+  <div class="wrap">
+    <div class="projects__head">
+      <div>
+        <span class="eyebrow" data-reveal>Projects · 项目</span>
+        <h2 id="projects-title" class="section-title" data-reveal style="--d:1">我们正在做的事</h2>
+      </div>
+      <p class="projects__intro" data-reveal style="--d:2">
+        三个入口，同一个账号。社区是起点，Aliya Web 和官方 App 让你在任何设备上都能继续对话。
+      </p>
+    </div>
+
+    <ul class="cards">
+      {projects.map((p, i) => (
+        <li class="card" data-reveal style={`--d:${i}`}>
+          <article class="card__inner" data-tilt aria-labelledby={`p-${p.id}`}>
+            <div class={`card__art art--${p.shape}`} aria-hidden="true">
+              {p.shape === 'timeline' && (
+                <svg viewBox="0 0 320 220">
+                  <defs>
+                    <linearGradient id="tl-fade" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="#fff" stop-opacity="0" />
+                      <stop offset="0.18" stop-color="#fff" />
+                      <stop offset="0.82" stop-color="#fff" />
+                      <stop offset="1" stop-color="#fff" stop-opacity="0" />
+                    </linearGradient>
+                    <mask id="tl-mask"><rect width="320" height="220" fill="url(#tl-fade)" /></mask>
+                  </defs>
+                  <g mask="url(#tl-mask)">
+                    <g class="tl-feed">
+                      {[0, 1].map((rep) => notes.map((n, i) => {
+                        const y = 14 + (rep * notes.length + i) * NOTE_STEP;
+                        return (
+                          <g>
+                            <rect class="tl-note" x="56" y={y} width="208" height={NOTE_H} rx="10" />
+                            {n.agent ? (
+                              <g>
+                                <circle class="tl-avatar tl-avatar--agent" cx="76" cy={y + 18} r="10" />
+                                <rect class="tl-bot" x="70.5" y={y + 14.5} width="11" height="8" rx="2.5" />
+                                <line class="tl-bot-ant" x1="76" y1={y + 14.5} x2="76" y2={y + 11.5} />
+                                <circle class="tl-bot-eye" cx="73.6" cy={y + 18.5} r="1.2" />
+                                <circle class="tl-bot-eye" cx="78.4" cy={y + 18.5} r="1.2" />
+                                <rect class="tl-name" x="92" y={y + 12} width="52" height="5" rx="2.5" />
+                                <circle class="tl-typing" cx="98" cy={y + 34} r="2.6" />
+                                <circle class="tl-typing tl-typing--2" cx="107" cy={y + 34} r="2.6" />
+                                <circle class="tl-typing tl-typing--3" cx="116" cy={y + 34} r="2.6" />
+                              </g>
+                            ) : (
+                              <g>
+                                <circle class="tl-avatar" cx="76" cy={y + 18} r="10" />
+                                <rect class="tl-name" x="92" y={y + 12} width={n.name} height="5" rx="2.5" />
+                                {n.lines.map((w, j) => <rect class="tl-line" x="92" y={y + 24 + j * 8} width={w} height="4" rx="2" />)}
+                                {n.react && (
+                                  <g class="tl-react" style={`transform-origin: 104px ${y + 45}px`}>
+                                    <rect x="92" y={y + 40} width="26" height="10" rx="5" />
+                                    <circle cx="100" cy={y + 45} r="2.4" />
+                                    <rect x="105" y={y + 44} width="8" height="2" rx="1" />
+                                  </g>
+                                )}
+                              </g>
+                            )}
+                          </g>
+                        );
+                      }))}
+                    </g>
+                  </g>
+                </svg>
+              )}
+              {p.shape === 'console' && (
+                <svg viewBox="0 0 320 220">
+                  <defs>
+                    <linearGradient id="ecg-fade" gradientUnits="userSpaceOnUse" x1="40" y1="0" x2="280" y2="0">
+                      <stop offset="0" stop-color="#fff" stop-opacity="0" />
+                      <stop offset="0.3" stop-color="#fff" />
+                      <stop offset="1" stop-color="#fff" />
+                    </linearGradient>
+                    <mask id="ecg-mask"><rect x="40" y="76" width="240" height="64" fill="url(#ecg-fade)" /></mask>
+                  </defs>
+                  <g transform="translate(0 8)">
+                  <rect class="cs-panel" x="28" y="22" width="264" height="176" rx="12" />
+                  <text class="cs-txt cs-name" x="44" y="50">ALIYA</text>
+                  <text class="cs-txt cs-label" x="44" y="64">HEART RATE</text>
+                  <g class="cs-bpm">
+                    <text class="cs-txt cs-num cs-num--a" x="276" y="62" text-anchor="end">75</text>
+                    <text class="cs-txt cs-num cs-num--b" x="276" y="62" text-anchor="end">76</text>
+                    <text class="cs-txt cs-num cs-num--c" x="276" y="62" text-anchor="end">74</text>
+                  </g>
+                  <rect class="cs-screen" x="40" y="76" width="240" height="64" rx="4" />
+                  {[96, 108, 120].map((gy) => <line class="cs-grid" x1="40" y1={gy} x2="280" y2={gy} />)}
+                  <g mask="url(#ecg-mask)">
+                    <path class="cs-ecg" d={ecgPath} />
+                  </g>
+                  {gauges.map((g, i) => (
+                    <g>
+                      <text class="cs-txt cs-label" x={44 + i * 58} y="160">{g}</text>
+                      <rect class="cs-track" x={44 + i * 58} y="168" width="48" height="5" rx="2.5" />
+                      <rect class={`cs-fill cs-fill--${i + 1}`} x={44 + i * 58} y="168" width="48" height="5" rx="2.5" />
+                    </g>
+                  ))}
+                  <rect class="cs-switch" x="234" y="154" width="42" height="18" rx="9" />
+                  <circle class="cs-knob" cx="243" cy="163" r="6" />
+                  <text class="cs-txt cs-sys" x="276" y="188" text-anchor="end">COSMOS CONTROL SYSTEM</text>
+                  </g>
+                </svg>
+              )}
+              {p.shape === 'device' && (
+                <svg viewBox="0 0 320 220">
+                  <rect class="phone" x="122" y="22" width="76" height="176" rx="14" />
+                  <line class="notch" x1="150" y1="36" x2="170" y2="36" />
+                  <rect class="bar bar--1" x="136" y="62" width="48" height="8" rx="4" />
+                  <rect class="bar bar--2" x="136" y="80" width="34" height="8" rx="4" />
+                  <rect class="bar bar--3" x="150" y="98" width="34" height="8" rx="4" />
+                  <circle class="pulse" cx="160" cy="160" r="10" />
+                  <circle class="pulse pulse--ring" cx="160" cy="160" r="10" />
+                </svg>
+              )}
+              <span class="card__index">{p.index}</span>
+            </div>
+
+            <div class="card__body">
+              <span class="card__en">{p.en}</span>
+              <h3 id={`p-${p.id}`} class="card__title serif">{p.name}</h3>
+              <p class="card__summary">{p.summary}</p>
+              {p.note && <p class="card__note">{p.note}</p>}
+              <div class="card__actions">
+                <a class="btn btn--dark" href={p.href} rel="noopener"><span>{p.cta}</span><span class="arrow" aria-hidden="true">→</span></a>
+                <a class="card__docs" href={p.docs} rel="noopener">{p.name}使用说明</a>
+              </div>
+            </div>
+            <span class="card__shine" aria-hidden="true"></span>
+          </article>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .projects {
+    padding: clamp(96px, 13vw, 168px) 0;
+    position: relative;
+  }
+  .projects__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  .projects__intro { max-width: 380px; color: #57554f; font-size: 15px; }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: clamp(48px, 6vw, 80px);
+    perspective: 1200px;
+  }
+  .card__inner {
+    --rx: 0deg;
+    --ry: 0deg;
+    --mx: 50%;
+    --my: 50%;
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid var(--line-light);
+    overflow: hidden;
+    transform: rotateX(var(--rx)) rotateY(var(--ry));
+    transform-style: preserve-3d;
+    transition: transform 0.6s var(--ease), box-shadow 0.6s var(--ease);
+  }
+  .card__inner:hover { box-shadow: 0 40px 80px -40px rgba(11, 11, 12, 0.45); }
+  .card__inner.is-tilting { transition: box-shadow 0.6s var(--ease); }
+  .card__shine {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(420px circle at var(--mx) var(--my), rgba(255, 255, 255, 0.5), transparent 45%);
+    mix-blend-mode: soft-light;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .card__inner:hover .card__shine { opacity: 1; }
+
+  .card__art {
+    position: relative;
+    aspect-ratio: 16 / 11;
+    background:
+      radial-gradient(80% 80% at 50% 40%, #232326, var(--ink));
+    overflow: hidden;
+  }
+  .card__art svg { width: 100%; height: 100%; }
+  .card__index {
+    position: absolute;
+    left: 20px;
+    top: 16px;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--graphite);
+  }
+
+  .card__body { display: flex; flex-direction: column; flex: 1; padding: 32px 28px 28px; }
+  .card__en { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: #8a8780; }
+  .card__title { margin-top: 8px; font-size: 28px; letter-spacing: 0.08em; }
+  .card__summary { margin: 16px 0 36px; font-size: 14px; color: #4f4d48; line-height: 1.9; }
+  .card__summary:has(+ .card__note) { margin-bottom: 0; }
+  .card__note { margin: 10px 0 36px; font-size: 12px; color: #6f6c66; }
+  .card__actions {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .card__actions .btn { --h: 46px; padding: 0 22px; font-size: 14px; }
+  .card__docs {
+    font-size: 13px;
+    color: #6f6c66;
+    border-bottom: 1px solid currentColor;
+    transition: color 0.3s;
+  }
+  .card__docs:hover { color: var(--ink); }
+
+  /* Community: timeline. One loop scrolls exactly one set of notes (4 × 64). */
+  .tl-feed { animation: tlScroll 16s linear infinite; }
+  .tl-note { fill: rgba(255, 255, 255, 0.045); stroke: rgba(255, 255, 255, 0.1); }
+  .tl-avatar { fill: rgba(255, 255, 255, 0.28); }
+  .tl-avatar--agent { fill: #e9e7e2; }
+  .tl-bot { fill: none; stroke: #1d1d20; stroke-width: 1.4; }
+  .tl-bot-ant { stroke: #1d1d20; stroke-width: 1.4; stroke-linecap: round; }
+  .tl-bot-eye { fill: #1d1d20; }
+  .tl-name { fill: rgba(255, 255, 255, 0.62); }
+  .tl-line { fill: rgba(255, 255, 255, 0.22); }
+  .tl-react rect { fill: rgba(255, 255, 255, 0.1); stroke: rgba(255, 255, 255, 0.28); }
+  .tl-react circle { fill: #e9e7e2; }
+  .tl-react rect + circle + rect { fill: rgba(255, 255, 255, 0.5); stroke: none; }
+  .tl-react { transform-box: view-box; animation: tlPop 4s var(--ease) infinite; }
+  .tl-typing { fill: #e9e7e2; animation: tlType 1.2s ease-in-out infinite; }
+  .tl-typing--2 { animation-delay: 0.15s; }
+  .tl-typing--3 { animation-delay: 0.3s; }
+
+  /* Aliya: COSMOS console. Accent orange is taken from the Aliya Web UI. */
+  .cs-panel { fill: #2d2d2d; stroke: rgba(255, 255, 255, 0.08); }
+  .cs-screen { fill: #202020; }
+  .cs-grid { stroke: rgba(255, 255, 255, 0.05); }
+  .cs-txt { font-family: Consolas, 'Courier New', monospace; fill: #c1c1c1; }
+  .cs-name { font-size: 13px; font-weight: 700; letter-spacing: 0.18em; }
+  .cs-label { font-size: 7px; letter-spacing: 0.2em; fill: #8a8a8a; }
+  .cs-sys { font-size: 6px; letter-spacing: 0.24em; fill: #646464; }
+  .cs-num { font-size: 26px; font-weight: 700; fill: #e6a15a; animation: csNum 6s steps(1) infinite; }
+  .cs-num--b { opacity: 0; animation-delay: -4s; }
+  .cs-num--c { opacity: 0; animation-delay: -2s; }
+  .cs-ecg { fill: none; stroke: #e6a15a; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; animation: csEcg 2.4s linear infinite; }
+  .cs-track { fill: #454545; }
+  .cs-fill { fill: #c6c6c6; transform-box: fill-box; transform-origin: left; animation: csGauge 5s ease-in-out infinite; }
+  .cs-fill--1 { animation-delay: -1s; }
+  .cs-fill--2 { animation-delay: -2.6s; animation-duration: 6s; }
+  .cs-fill--3 { animation-delay: -0.4s; animation-duration: 7s; }
+  .cs-switch { fill: #454545; }
+  .cs-knob { fill: #e6a15a; animation: csKnob 8s var(--ease) infinite; }
+
+  .phone { fill: none; stroke: rgba(255, 255, 255, 0.55); }
+  .notch { stroke: rgba(255, 255, 255, 0.4); stroke-linecap: round; }
+  .bar { fill: rgba(255, 255, 255, 0.82); transform-box: fill-box; animation: msg 5s var(--ease) infinite both; }
+  .bar--2 { fill: rgba(255, 255, 255, 0.4); animation-delay: 0.5s; }
+  .bar--3 { animation-delay: 1s; transform-origin: right; }
+  .bar--1, .bar--2 { transform-origin: left; }
+  .pulse { fill: #e9e7e2; }
+  .pulse--ring { fill: none; stroke: #e9e7e2; transform-origin: 160px 160px; animation: ping 2.6s ease-out infinite; }
+
+  @keyframes tlScroll { to { transform: translateY(-256px); } }
+  @keyframes tlPop {
+    0%, 30% { transform: scale(0); opacity: 0; }
+    40% { transform: scale(1.15); opacity: 1; }
+    48%, 100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes tlType { 0%, 60%, 100% { opacity: 0.25; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-2px); } }
+  @keyframes csEcg { to { transform: translateX(-80px); } }
+  @keyframes csNum { 0%, 33.33% { opacity: 1; } 33.34%, 100% { opacity: 0; } }
+  @keyframes csGauge { 0%, 100% { transform: scaleX(0.82); } 50% { transform: scaleX(0.58); } }
+  @keyframes csKnob { 0%, 40% { transform: translateX(0); } 50%, 90% { transform: translateX(24px); } 100% { transform: translateX(0); } }
+  @keyframes msg {
+    0%, 8% { transform: scaleX(0); opacity: 0; }
+    20%, 80% { transform: scaleX(1); opacity: 1; }
+    100% { transform: scaleX(1); opacity: 0; }
+  }
+  @keyframes ping { from { transform: scale(1); opacity: 0.8; } to { transform: scale(3); opacity: 0; } }
+
+  @media (max-width: 960px) {
+    .cards { grid-template-columns: 1fr; max-width: 560px; margin-inline: auto; }
+  }
+
+  /* The global reduced-motion rule jumps to end frames, which would hide these elements. */
+  @media (prefers-reduced-motion: reduce) {
+    .cs-num, .bar { animation: none; }
+  }
+</style>

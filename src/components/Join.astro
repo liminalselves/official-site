@@ -1,0 +1,122 @@
+---
+import { site, links } from '../data/site';
+---
+
+<section id="join" class="join light" aria-labelledby="join-title">
+  <div class="join__mark" aria-hidden="true">
+    <img src="/brand/mark-dark.webp" alt="" width="560" height="468" loading="lazy" />
+  </div>
+  <div class="wrap join__grid">
+    <div>
+      <span class="eyebrow" data-reveal>Join · 加入我们</span>
+      <h2 id="join-title" class="section-title" data-reveal style="--d:1">门已打开，<br />欢迎跨进来。</h2>
+      <p class="join__intro" data-reveal style="--d:2">
+        注册社区账号即可使用全部功能。遇到问题或想和项目组聊聊，可以通过下面的方式找到我们。
+      </p>
+      <div class="join__cta" data-reveal style="--d:3">
+        <a class="btn btn--dark" href={links.community} rel="noopener"><span>注册 / 登录社区</span><span class="arrow" aria-hidden="true">→</span></a>
+      </div>
+    </div>
+
+    <ul class="contacts">
+      <li class="contact" data-reveal style="--d:1">
+        <span class="contact__label">官方 Q 群</span>
+        <span class="contact__value serif">{site.qqGroup}</span>
+        <span class="contact__note">响应较快，适合日常问题与 bug 反馈</span>
+        <button class="contact__action" type="button" data-copy={site.qqGroup}>
+          <span data-copy-label>复制群号</span>
+        </button>
+      </li>
+      <li class="contact" data-reveal style="--d:2">
+        <span class="contact__label">官方邮箱</span>
+        <a class="contact__value serif" href={`mailto:${site.email}`}>{site.email}</a>
+        <span class="contact__note">适合报备、举报、投诉、申诉等社区事务</span>
+        <a class="contact__action" href={`mailto:${site.email}`}>发送邮件</a>
+      </li>
+      <li class="contact" data-reveal style="--d:3">
+        <span class="contact__label">使用文档</span>
+        <a class="contact__value serif" href={links.docs} rel="noopener">docs.liminalselves.top</a>
+        <span class="contact__note">注册登录、智能体、角色创作与常见问题</span>
+        <a class="contact__action" href={links.faq} rel="noopener">常见问题</a>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<style>
+  .join {
+    position: relative;
+    padding: clamp(96px, 13vw, 168px) 0;
+    overflow: hidden;
+  }
+  .join__mark {
+    position: absolute;
+    right: -6%;
+    top: 50%;
+    width: min(46vw, 560px);
+    translate: 0 -50%;
+    opacity: 0.05;
+    pointer-events: none;
+    animation: drift 16s ease-in-out infinite;
+  }
+  .join__grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: clamp(48px, 7vw, 120px);
+    align-items: start;
+  }
+  .join__intro { margin-top: 28px; max-width: 420px; color: #57554f; font-size: 15px; }
+  .join__cta { margin-top: 40px; }
+
+  .contacts { border-top: 1px solid var(--line-light); }
+  .contact {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: 'label action' 'value action' 'note action';
+    align-items: center;
+    column-gap: 24px;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--line-light);
+  }
+  .contact__label { grid-area: label; font-size: 12px; letter-spacing: 0.24em; color: #8a8780; }
+  .contact__value {
+    grid-area: value;
+    margin-top: 6px;
+    font-size: clamp(20px, 2.6vw, 30px);
+    letter-spacing: 0.04em;
+    word-break: break-all;
+    width: fit-content;
+    background: linear-gradient(currentColor, currentColor) left bottom / 0 1px no-repeat;
+    transition: background-size 0.5s var(--ease);
+  }
+  a.contact__value:hover { background-size: 100% 1px; }
+  .contact__note { grid-area: note; margin-top: 6px; font-size: 13px; color: #6f6c66; }
+  .contact__action {
+    grid-area: action;
+    padding: 8px 16px;
+    font: inherit;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--line-light);
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+  }
+  .contact__action:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  @keyframes drift {
+    50% { transform: translateY(-18px) rotate(-3deg); }
+  }
+
+  @media (max-width: 860px) {
+    .join__grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .contact { grid-template-columns: 1fr; grid-template-areas: 'label' 'value' 'note' 'action'; }
+    .contact__action { justify-self: start; margin-top: 14px; }
+  }
+</style>

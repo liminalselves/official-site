@@ -1,0 +1,105 @@
+---
+import { pillars } from '../data/site';
+---
+
+<section id="about" class="about" aria-labelledby="about-title">
+  <div class="wrap">
+    <span class="eyebrow" data-reveal>About · 关于我们</span>
+    <h2 id="about-title" class="about__lead serif">
+      <span class="line" data-reveal="mask" style="--d:0">在边界之间，</span>
+      <span class="line" data-reveal="mask" style="--d:1"><em class="metal-text">连接</em>不同的自我。</span>
+    </h2>
+
+    <div class="about__body">
+      <p data-reveal style="--d:2">
+        阈界人格（Liminal Selves）是一个以社区和智能体为核心的项目组。我们运营基于 Misskey 搭建的阈界人格社区，在这里可以发帖、私信、逛频道，也可以和智能体角色聊天，发布自己创作的角色。
+      </p>
+      <p data-reveal style="--d:3">
+        「阈界」取自阈限（liminal），指两种状态之间的那道门槛。我们希望每个人都能在这里跨过它，找到更多表达自己的方式。
+      </p>
+    </div>
+
+    <ul class="pillars">
+      {pillars.map((p, i) => (
+        <li class="pillar" data-reveal style={`--d:${i}`}>
+          <span class="pillar__no">0{i + 1}</span>
+          <h3 class="pillar__title serif">{p.title}</h3>
+          <span class="pillar__en">{p.en}</span>
+          <p class="pillar__desc">{p.desc}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .about {
+    position: relative;
+    padding: clamp(96px, 16vw, 200px) 0 clamp(80px, 12vw, 160px);
+    background: linear-gradient(to bottom, var(--ink), var(--ink-2));
+  }
+  .about__lead {
+    margin-top: 28px;
+    font-size: clamp(36px, 6.4vw, 84px);
+    line-height: 1.22;
+    letter-spacing: 0.04em;
+  }
+  .about__lead .line { display: block; padding-bottom: 0.06em; }
+  .about__lead em { font-style: normal; background-size: 200% 100%; }
+
+  .about__body {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(24px, 4vw, 64px);
+    max-width: 960px;
+    margin: clamp(48px, 6vw, 80px) 0 0 auto;
+    color: rgba(244, 241, 236, 0.7);
+    font-size: 15px;
+    line-height: 2;
+  }
+
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: clamp(64px, 9vw, 120px);
+    border-top: 1px solid var(--line-dark);
+  }
+  .pillar {
+    position: relative;
+    padding: 40px 32px 44px 0;
+    border-right: 1px solid var(--line-dark);
+    overflow: hidden;
+  }
+  .pillar + .pillar { padding-left: 32px; }
+  .pillar:last-child { border-right: 0; }
+  .pillar::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: -1px;
+    height: 1px;
+    width: 100%;
+    background: var(--paper);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.8s var(--ease);
+  }
+  .pillar:hover::before { transform: scaleX(1); }
+  .pillar__no { font-size: 12px; letter-spacing: 0.2em; color: var(--graphite); }
+  .pillar__title { margin-top: 28px; font-size: 30px; letter-spacing: 0.12em; }
+  .pillar__en {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--graphite);
+  }
+  .pillar__desc { margin-top: 20px; font-size: 14px; color: rgba(244, 241, 236, 0.62); }
+
+  @media (max-width: 760px) {
+    .about__body { grid-template-columns: 1fr; }
+    .pillars { grid-template-columns: 1fr; }
+    .pillar, .pillar + .pillar { padding: 32px 0; border-right: 0; border-bottom: 1px solid var(--line-dark); }
+  }
+</style>

@@ -1,0 +1,21 @@
+{
+  "name": "official-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "阈界人格项目组官方网站",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "assets": "node scripts/gen-assets.mjs",
+    "font": "python scripts/subset-font.py"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "3.7.4",
+    "astro": "7.4.1"
+  },
+  "devDependencies": {
+    "@fontsource/noto-serif-sc": "5.3.1"
+  }
+}

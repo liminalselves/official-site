@@ -1,0 +1,5 @@
+node_modules/
+.zcode/
+dist/
+.astro/
+.DS_Store

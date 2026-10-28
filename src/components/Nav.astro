@@ -1,0 +1,104 @@
+---
+import { links } from '../data/site';
+---
+
+<header class="nav" data-nav>
+  <div class="nav__inner wrap">
+    <a class="nav__brand" href="/" aria-label="阈界人格 首页">
+      <img src="/brand/mark-light-sm.webp" alt="" width="72" height="60" />
+      <span class="serif">阈界人格</span>
+      <span class="nav__en">Liminal Selves</span>
+    </a>
+    <nav aria-label="主导航">
+      <ul class="nav__links">
+        <li><a href="#about">关于</a></li>
+        <li><a href="#projects">项目</a></li>
+        <li><a href="#agents">智能体</a></li>
+        <li><a href="#join">加入</a></li>
+        <li><a href={links.docs} rel="noopener">文档</a></li>
+      </ul>
+    </nav>
+    <a class="nav__cta" href={links.community} rel="noopener">进入社区<span aria-hidden="true">↗</span></a>
+  </div>
+</header>
+
+<style>
+  .nav {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    transition: background 0.5s var(--ease), border-color 0.5s var(--ease), transform 0.5s var(--ease);
+    border-bottom: 1px solid transparent;
+  }
+  .nav.is-scrolled {
+    background: rgba(11, 11, 12, 0.72);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border-color: var(--line-dark);
+  }
+  .nav.is-hidden { transform: translateY(-100%); }
+  .nav__inner {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    height: 72px;
+  }
+  .nav__brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    letter-spacing: 0.2em;
+  }
+  .nav__brand img { width: 32px; height: auto; }
+  .nav__en {
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    color: var(--graphite);
+    padding-left: 12px;
+    border-left: 1px solid var(--line-dark);
+  }
+  .nav nav { margin-left: auto; }
+  .nav__links { display: flex; gap: 32px; font-size: 14px; letter-spacing: 0.12em; }
+  .nav__links a {
+    position: relative;
+    color: rgba(244, 241, 236, 0.72);
+    transition: color 0.3s;
+  }
+  .nav__links a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -6px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.45s var(--ease);
+  }
+  .nav__links a:hover { color: var(--paper); }
+  .nav__links a:hover::after { transform: scaleX(1); transform-origin: left; }
+  .nav__cta {
+    display: inline-flex;
+    gap: 6px;
+    padding: 8px 18px;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 999px;
+    transition: background 0.3s, color 0.3s;
+  }
+  .nav__cta:hover { background: var(--paper); color: var(--ink); }
+
+  @media (max-width: 860px) {
+    .nav__en { display: none; }
+    .nav__links { gap: 18px; }
+    .nav__links li:nth-child(n + 3) { display: none; }
+  }
+  @media (max-width: 520px) {
+    .nav__inner { gap: 16px; height: 60px; }
+    .nav__links { display: none; }
+    .nav__cta { margin-left: auto; }
+  }
+</style>
