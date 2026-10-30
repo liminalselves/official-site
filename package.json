@@ -8,6 +8,10 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "dev:aliyapet": "astro dev --config astro.aliyapet.config.mjs",
+    "build:aliyapet": "astro build --config astro.aliyapet.config.mjs",
+    "preview:aliyapet": "astro preview --config astro.aliyapet.config.mjs",
+    "test:server": "node --test server/test/service.test.mjs",
     "assets": "node scripts/gen-assets.mjs",
     "font": "python scripts/subset-font.py"
   },

@@ -1,0 +1,288 @@
+---
+import { pet, platforms } from '../data/pet';
+
+const byKey = Object.fromEntries(platforms.map((p) => [p.key, p]));
+---
+
+<section id="download" class="dl" aria-labelledby="dl-title">
+  <canvas class="dl__field" data-field aria-hidden="true"></canvas>
+  <div class="dl__glow" aria-hidden="true"></div>
+
+  <div class="dl__content wrap" data-parallax>
+    <div class="dl__mark">
+      <img src="/brand/mark-light.webp" alt="阈界人格标志" width="400" height="335" fetchpriority="high" />
+      <span class="dl__sheen" aria-hidden="true"></span>
+    </div>
+
+    <h1 id="dl-title" class="dl__title serif metal-text">Aliya Pet</h1>
+    <p class="dl__en">Desktop Pet</p>
+    <p class="dl__desc">{pet.intro}</p>
+
+    <p class="dl__meta">版本 <span data-meta-version>—</span> · 发布于 <span data-meta-date>—</span></p>
+
+    <div class="dl__actions" data-actions>
+      <a
+        class="btn btn--solid"
+        data-download="windows"
+        data-label={byKey.windows.label}
+        href="/download/windows"
+        title={byKey.windows.note}
+      >
+        <span data-size-label>{byKey.windows.label}</span><span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a
+        class="btn btn--ghost"
+        data-download="android"
+        data-label={byKey.android.label}
+        href="/download/android"
+        title={byKey.android.note}
+      >
+        <span data-size-label>{byKey.android.label}</span>
+      </a>
+      <a
+        class="dl__msi"
+        data-download="windows-msi"
+        data-label={byKey['windows-msi'].label}
+        href="/download/windows-msi"
+        title={byKey['windows-msi'].note}
+      >
+        <span data-size-label>{byKey['windows-msi'].label}</span>
+      </a>
+    </div>
+
+    <p class="dl__note">{pet.disclaimer}</p>
+  </div>
+
+  <div class="dl__visual wrap" aria-hidden="true">
+    <svg viewBox="0 0 560 340">
+      <circle class="wp-orb" cx="330" cy="180" r="112" />
+      <rect class="win" x="30" y="28" width="500" height="284" rx="16" />
+      <line class="win-line" x1="30" y1="64" x2="530" y2="64" />
+      <circle class="win-dot" cx="52" cy="46" r="4" />
+      <circle class="win-dot" cx="66" cy="46" r="4" />
+      <circle class="win-dot" cx="80" cy="46" r="4" />
+      <rect class="win-pill" x="452" y="41" width="54" height="10" rx="5" />
+      <rect class="win-icon" x="52" y="86" width="22" height="18" rx="4" />
+      <rect class="win-tag" x="48" y="112" width="30" height="5" rx="2.5" />
+      <rect class="win-icon" x="52" y="136" width="22" height="18" rx="4" />
+      <rect class="win-tag" x="48" y="162" width="30" height="5" rx="2.5" />
+      <line class="win-line" x1="30" y1="274" x2="530" y2="274" />
+      <rect class="win-icon" x="48" y="284" width="15" height="13" rx="3" />
+      <rect class="win-icon" x="70" y="284" width="15" height="13" rx="3" />
+      <rect class="win-pill" x="478" y="286" width="32" height="8" rx="4" />
+
+      <g class="bubble">
+        <rect x="212" y="102" width="74" height="36" rx="12" />
+        <path class="bubble-tail" d="M240 137 L234 149 L252 137 Z" />
+        <circle class="bubble-dot" cx="232" cy="120" r="3" />
+        <circle class="bubble-dot bubble-dot--2" cx="246" cy="120" r="3" />
+        <circle class="bubble-dot bubble-dot--3" cx="260" cy="120" r="3" />
+      </g>
+
+      <ellipse class="pet-shadow" cx="322" cy="256" rx="30" ry="6" />
+      <g class="pet-body">
+        <rect class="pet-figure" x="298" y="124" width="46" height="60" rx="23" />
+        <circle class="pet-eye" cx="312" cy="150" r="3" />
+        <circle class="pet-eye" cx="330" cy="150" r="3" />
+      </g>
+
+      <g class="toast">
+        <rect x="404" y="202" width="112" height="34" rx="10" />
+        <circle class="toast-refresh" cx="422" cy="219" r="7" />
+        <path class="toast-arrow" d="M427 211.5 L429.5 216 L424.5 217.5" />
+        <rect class="toast-bar" x="438" y="211" width="62" height="6" rx="3" />
+        <rect class="toast-bar toast-bar--2" x="438" y="223" width="42" height="5" rx="2.5" />
+      </g>
+    </svg>
+  </div>
+</section>
+
+<style>
+  .dl {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    isolation: isolate;
+    background:
+      radial-gradient(60% 50% at 50% 38%, #1b1b1e 0%, rgba(11, 11, 12, 0) 70%),
+      var(--ink);
+  }
+  .dl__field {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+  }
+  .dl__glow {
+    position: absolute;
+    left: 50%;
+    top: 44%;
+    width: min(70vw, 820px);
+    aspect-ratio: 1;
+    z-index: -1;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.08), transparent);
+    animation: breathe 9s ease-in-out infinite;
+  }
+
+  .dl__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-top: 128px;
+  }
+  .dl__mark {
+    position: relative;
+    width: clamp(88px, 11vw, 128px);
+    margin-bottom: 36px;
+    animation: rise 1.6s 0.4s var(--ease) both;
+    -webkit-mask: url('/brand/mark-light.webp') center / contain no-repeat;
+    mask: url('/brand/mark-light.webp') center / contain no-repeat;
+  }
+  .dl__mark img { width: 100%; height: auto; }
+  .dl__sheen {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.95) 50%, transparent 65%);
+    background-size: 250% 100%;
+    mix-blend-mode: overlay;
+    animation: sheen 6s 1.5s ease-in-out infinite;
+  }
+
+  .dl__title {
+    font-size: clamp(46px, 8vw, 96px);
+    line-height: 1.1;
+    letter-spacing: 0.04em;
+    animation: fade 1.4s 0.8s var(--ease) both;
+  }
+  .dl__en {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-top: 18px;
+    font-family: var(--serif);
+    font-size: clamp(13px, 1.5vw, 17px);
+    letter-spacing: 0.5em;
+    padding-left: 0.5em;
+    color: var(--silver);
+    animation: fade 1.4s 1.1s var(--ease) both;
+  }
+  .dl__en::before,
+  .dl__en::after {
+    content: '';
+    width: clamp(36px, 8vw, 96px);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4));
+  }
+  .dl__en::after { transform: scaleX(-1); }
+
+  .dl__desc {
+    max-width: 640px;
+    margin-top: 40px;
+    font-size: 16px;
+    line-height: 2;
+    color: rgba(244, 241, 236, 0.78);
+    animation: fade 1.4s 1.3s var(--ease) both;
+  }
+  .dl__meta {
+    margin-top: 22px;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    color: var(--graphite);
+    animation: fade 1.4s 1.45s var(--ease) both;
+  }
+  .dl__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 44px;
+    animation: fade 1.4s 1.6s var(--ease) both;
+  }
+  .dl__actions .btn { min-width: 200px; }
+  .dl__msi {
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    color: var(--silver);
+    border-bottom: 1px solid rgba(244, 241, 236, 0.28);
+    transition: color 0.3s, border-color 0.3s;
+  }
+  .dl__msi:hover { color: var(--paper); border-color: var(--paper); }
+  .dl__note {
+    margin-top: 36px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--graphite);
+    animation: fade 1.4s 1.75s var(--ease) both;
+  }
+
+  .dl__visual {
+    width: min(680px, var(--wrap));
+    margin-top: clamp(48px, 7vw, 88px);
+    padding-bottom: clamp(56px, 8vw, 104px);
+    animation: fade 1.6s 1.9s var(--ease) both;
+  }
+  .dl__visual svg { width: 100%; height: auto; }
+
+  /* Abstract mock desktop; geometry only, no character art. */
+  .wp-orb { fill: rgba(255, 255, 255, 0.03); }
+  .win { fill: #1b1b1e; stroke: rgba(255, 255, 255, 0.14); }
+  .win-line { stroke: rgba(255, 255, 255, 0.1); }
+  .win-dot { fill: rgba(255, 255, 255, 0.28); }
+  .win-pill { fill: rgba(255, 255, 255, 0.16); }
+  .win-icon { fill: none; stroke: rgba(255, 255, 255, 0.35); }
+  .win-tag { fill: rgba(255, 255, 255, 0.18); }
+  .pet-figure { fill: #e9e7e2; }
+  .pet-eye { fill: #1d1d20; }
+  .pet-body { animation: petFloat 4.5s ease-in-out infinite; }
+  .pet-shadow {
+    fill: rgba(0, 0, 0, 0.4);
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: petShadow 4.5s ease-in-out infinite;
+  }
+  .bubble rect { fill: rgba(255, 255, 255, 0.08); stroke: rgba(255, 255, 255, 0.22); }
+  .bubble-tail { fill: rgba(255, 255, 255, 0.08); }
+  .bubble-dot { fill: #e9e7e2; animation: dotType 1.2s ease-in-out infinite; }
+  .bubble-dot--2 { animation-delay: 0.15s; }
+  .bubble-dot--3 { animation-delay: 0.3s; }
+  .toast rect { fill: #26262a; stroke: rgba(255, 255, 255, 0.16); }
+  .toast { animation: toastIn 9s var(--ease) infinite both; }
+  .toast-bar { fill: rgba(255, 255, 255, 0.4); }
+  .toast-bar--2 { fill: rgba(255, 255, 255, 0.2); }
+  .toast-refresh { fill: none; stroke: #e6a15a; stroke-width: 1.6; stroke-linecap: round; }
+  .toast-arrow { fill: none; stroke: #e6a15a; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+  @keyframes breathe { 50% { transform: scale(1.12); opacity: 0.7; } }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(24px) scale(0.92); filter: blur(10px); }
+    to { opacity: 1; transform: none; filter: none; }
+  }
+  @keyframes sheen {
+    0%, 55% { background-position: 150% 0; }
+    100% { background-position: -100% 0; }
+  }
+  @keyframes fade {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes petFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+  @keyframes petShadow { 0%, 100% { transform: scaleX(1); opacity: 1; } 50% { transform: scaleX(0.82); opacity: 0.6; } }
+  @keyframes dotType { 0%, 60%, 100% { opacity: 0.25; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-2px); } }
+  @keyframes toastIn {
+    0% { opacity: 0; transform: translateY(12px); }
+    10%, 100% { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 520px) {
+    .dl__actions .btn { min-width: 100%; }
+    .dl__msi { margin-top: 4px; }
+  }
+</style>

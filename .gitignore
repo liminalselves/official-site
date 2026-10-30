@@ -1,5 +1,6 @@
 node_modules/
 .zcode/
 dist/
+dist-aliyapet/
 .astro/
 .DS_Store

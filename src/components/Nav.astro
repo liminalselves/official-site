@@ -1,24 +1,61 @@
 ---
-import { links } from '../data/site';
+import { links as siteLinks } from '../data/site';
+
+interface NavLink {
+  label: string;
+  href: string;
+  sibling?: string;
+}
+
+interface Props {
+  brandLabel?: string;
+  brandEn?: string;
+  brandHref?: string;
+  brandSibling?: string;
+  brandAria?: string;
+  links?: NavLink[];
+  cta?: NavLink | null;
+}
+
+const {
+  brandLabel = '阈界人格',
+  brandEn = 'Liminal Selves',
+  brandHref = '/',
+  brandSibling,
+  brandAria = `${brandLabel} 首页`,
+  links = [
+    { label: '关于', href: '#about' },
+    { label: '项目', href: '#projects' },
+    { label: '智能体', href: '#agents' },
+    { label: '加入', href: '#join' },
+    { label: '文档', href: siteLinks.docs },
+  ],
+  cta = { label: '进入社区', href: siteLinks.community },
+} = Astro.props;
+
+const rel = (href: string) => (/^https?:/.test(href) ? 'noopener' : undefined);
 ---
 
 <header class="nav" data-nav>
   <div class="nav__inner wrap">
-    <a class="nav__brand" href="/" aria-label="阈界人格 首页">
+    <a class="nav__brand" href={brandHref} data-sibling={brandSibling} aria-label={brandAria}>
       <img src="/brand/mark-light-sm.webp" alt="" width="72" height="60" />
-      <span class="serif">阈界人格</span>
-      <span class="nav__en">Liminal Selves</span>
+      <span class="serif">{brandLabel}</span>
+      {brandEn && <span class="nav__en">{brandEn}</span>}
     </a>
     <nav aria-label="主导航">
       <ul class="nav__links">
-        <li><a href="#about">关于</a></li>
-        <li><a href="#projects">项目</a></li>
-        <li><a href="#agents">智能体</a></li>
-        <li><a href="#join">加入</a></li>
-        <li><a href={links.docs} rel="noopener">文档</a></li>
+        {links.map((l) => (
+          <li><a href={l.href} data-sibling={l.sibling} rel={rel(l.href)}>{l.label}</a></li>
+        ))}
       </ul>
     </nav>
-    <a class="nav__cta" href={links.community} rel="noopener">进入社区<span aria-hidden="true">↗</span></a>
+    {cta && (
+      <a class="nav__cta" href={cta.href} data-sibling={cta.sibling} rel={rel(cta.href)}>
+        {cta.label}
+        {!cta.href.startsWith('#') && <span aria-hidden="true">↗</span>}
+      </a>
+    )}
   </div>
 </header>
 

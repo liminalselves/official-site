@@ -4,8 +4,8 @@ export const site = {
   nameEn: 'Liminal Selves',
   title: '阈界人格 Liminal Selves · 官方网站',
   description:
-    '阈界人格（Liminal Selves）项目组官方网站。我们运营基于 Misskey 的阈界人格社区，提供智能体角色聊天与角色创作，并开发 Aliya Web 聊天终端与官方 Android App。',
-  keywords: '阈界人格,Liminal Selves,阈界人格社区,Misskey,智能体,AI 角色,角色创作,Aliya Web,Aliya',
+    '阈界人格（Liminal Selves）项目组官方网站。我们运营基于 Misskey 的阈界人格社区，提供智能体角色聊天与角色创作，并开发 Aliya Web 聊天终端、官方 Android App 与 Aliya Pet 桌面宠物。',
+  keywords: '阈界人格,Liminal Selves,阈界人格社区,Misskey,智能体,AI 角色,角色创作,Aliya Web,Aliya,Aliya Pet,桌面宠物',
   tagline: '跨过阈限，遇见更多可能的自我。',
   email: 'help@liminalselves.top',
   icp: '闽ICP备2025116989号-1',
@@ -21,6 +21,7 @@ export const site = {
 export const links = {
   community: 'https://misskey.liminalselves.top/',
   aliya: 'https://aliya.liminalselves.top',
+  aliyapet: 'https://aliyapet.liminalselves.top',
   app: 'https://misskey.liminalselves.top/app',
   docs: 'https://docs.liminalselves.top',
   rules: 'https://docs.liminalselves.top/guide/rules',
@@ -35,9 +36,13 @@ export type Project = {
   summary: string;
   note?: string;
   href: string;
+  /** Set when the project lives on a sibling subsite; enables runtime host rewriting. */
+  sibling?: string;
   cta: string;
   docs: string;
-  shape: 'timeline' | 'console' | 'device';
+  /** Defaults to `${name}使用说明`. */
+  docsLabel?: string;
+  shape: 'timeline' | 'console' | 'device' | 'pet';
 };
 
 export const projects: Project[] = [
@@ -74,6 +79,20 @@ export const projects: Project[] = [
     cta: '下载 App',
     docs: `${links.docs}/guide/clients/official`,
     shape: 'device',
+  },
+  {
+    id: 'pet',
+    index: '04',
+    name: 'Aliya Pet',
+    en: 'Desktop Pet',
+    summary: '基于 Live2D 的桌面宠物，支持 Windows 与 Android。抚摸、点击与她互动，按时段问候，接入社区智能体聊天。',
+    note: '本项目为非官方二次创作，与原作版权方无关',
+    href: links.aliyapet,
+    sibling: 'aliyapet',
+    cta: '下载 Aliya Pet',
+    docs: links.aliyapet,
+    docsLabel: '下载与常见问题',
+    shape: 'pet',
   },
 ];
 

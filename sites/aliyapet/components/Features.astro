@@ -1,0 +1,80 @@
+---
+import { features } from '../data/pet';
+---
+
+<section id="features" class="feats light" aria-labelledby="feats-title">
+  <div class="wrap">
+    <span class="eyebrow" data-reveal>Features · 特性</span>
+    <h2 id="feats-title" class="section-title" data-reveal style="--d:1">让她留在桌面上</h2>
+    <p class="feats__intro" data-reveal style="--d:2">角色使用官方 Live2D Cubism Web SDK 渲染。</p>
+
+    <ol class="feats__list">
+      {features.map((f, i) => (
+        <li class="feat" data-reveal style={`--d:${i}`}>
+          <span class="feat__no">0{i + 1}</span>
+          <h3 class="feat__name serif">{f.name}</h3>
+          <span class="feat__en">{f.en}</span>
+          <p class="feat__desc">{f.desc}</p>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .feats {
+    padding: clamp(96px, 13vw, 168px) 0;
+  }
+  .feats__intro { margin-top: 28px; color: #57554f; font-size: 15px; }
+
+  .feats__list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: clamp(48px, 6vw, 80px) 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line-light);
+    border-left: 1px solid var(--line-light);
+  }
+  .feat {
+    position: relative;
+    padding: 36px 28px 40px;
+    border-right: 1px solid var(--line-light);
+    border-bottom: 1px solid var(--line-light);
+    overflow: hidden;
+    isolation: isolate;
+    transition: color 0.5s var(--ease);
+  }
+  .feat::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--ink);
+    clip-path: polygon(0 100%, 0 100%, 0 100%);
+    transition: clip-path 0.7s var(--ease);
+  }
+  .feat:hover { color: var(--paper); }
+  .feat:hover::before { clip-path: polygon(0 -60%, 160% 100%, 0 100%); }
+  .feat:hover .feat__desc, .feat:hover .feat__no, .feat:hover .feat__en { color: rgba(244, 241, 236, 0.6); }
+  .feat__no { font-size: 12px; letter-spacing: 0.2em; color: #8a8780; transition: color 0.5s; }
+  .feat__name { margin-top: 28px; font-size: 24px; letter-spacing: 0.1em; }
+  .feat__en {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #8a8780;
+    transition: color 0.5s;
+  }
+  .feat__desc { margin-top: 16px; font-size: 14px; line-height: 1.9; color: #4f4d48; transition: color 0.5s; }
+
+  @media (max-width: 960px) {
+    .feats__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 560px) {
+    .feats__list { grid-template-columns: 1fr; }
+    .feat { padding: 28px 22px 32px; }
+  }
+</style>

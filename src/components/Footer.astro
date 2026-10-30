@@ -1,36 +1,76 @@
 ---
 import { site, links, projects } from '../data/site';
 const year = new Date().getFullYear();
+
+interface FooterLink {
+  label: string;
+  href?: string;
+  sibling?: string;
+}
+interface FooterCol {
+  heading: string;
+  links: FooterLink[];
+}
+interface Props {
+  brandHref?: string;
+  brandSibling?: string;
+  brandAria?: string;
+  cols?: FooterCol[];
+}
+
+const {
+  brandHref = '/',
+  brandSibling,
+  brandAria = '阈界人格 首页',
+  cols = [
+    {
+      heading: '项目',
+      links: projects.map((p) => ({ label: p.name, href: p.href, sibling: p.sibling })),
+    },
+    {
+      heading: '帮助',
+      links: [
+        { label: '使用文档', href: links.docs },
+        { label: '社区规范', href: links.rules },
+        { label: '常见问题', href: links.faq },
+      ],
+    },
+    {
+      heading: '联系',
+      links: [
+        { label: `Q 群 ${site.qqGroup}` },
+        { label: site.email, href: `mailto:${site.email}` },
+      ],
+    },
+  ],
+} = Astro.props;
+
+const rel = (href?: string) => (href && /^https?:/.test(href) ? 'noopener' : undefined);
 ---
 
 <footer class="footer">
   <div class="wrap">
     <div class="footer__top">
-      <a class="footer__brand" href="/" aria-label="阈界人格 首页">
+      <a class="footer__brand" href={brandHref} data-sibling={brandSibling} aria-label={brandAria}>
         <img src="/brand/wordmark-light.webp" alt="阈界人格 Liminal Selves" width="440" height="118" loading="lazy" />
       </a>
       <nav class="footer__cols" aria-label="页脚导航">
-        <div>
-          <h2 class="footer__h">项目</h2>
-          <ul>
-            {projects.map((p) => <li><a href={p.href} rel="noopener">{p.name}</a></li>)}
-          </ul>
-        </div>
-        <div>
-          <h2 class="footer__h">帮助</h2>
-          <ul>
-            <li><a href={links.docs} rel="noopener">使用文档</a></li>
-            <li><a href={links.rules} rel="noopener">社区规范</a></li>
-            <li><a href={links.faq} rel="noopener">常见问题</a></li>
-          </ul>
-        </div>
-        <div>
-          <h2 class="footer__h">联系</h2>
-          <ul>
-            <li>Q 群 {site.qqGroup}</li>
-            <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
-          </ul>
-        </div>
+        {cols.map((col) => (
+          <div>
+            <h2 class="footer__h">{col.heading}</h2>
+            <ul>
+              {col.links.map((l) => (
+                <li>
+                  {l.href ? (
+                    <a href={l.href} data-sibling={l.sibling} rel={rel(l.href)}>{l.label}</a>
+                  ) : (
+                    <span>{l.label}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </nav>
     </div>
     <div class="footer__bottom">

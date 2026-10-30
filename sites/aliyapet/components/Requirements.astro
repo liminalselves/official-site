@@ -1,0 +1,60 @@
+---
+import { requirements } from '../data/pet';
+---
+
+<section id="requirements" class="reqs light" aria-labelledby="reqs-title">
+  <div class="wrap">
+    <span class="eyebrow" data-reveal>Requirements · 系统要求</span>
+    <h2 id="reqs-title" class="section-title" data-reveal style="--d:1">系统要求</h2>
+
+    <ul class="reqs__list">
+      {requirements.map((r, i) => (
+        <li class="req" data-reveal style={`--d:${i}`}>
+          <h3 class="req__name serif">{r.platform}</h3>
+          <ul class="req__items">
+            {r.items.map((it) => <li>{it}</li>)}
+          </ul>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .reqs { padding: clamp(96px, 13vw, 168px) 0; }
+
+  .reqs__list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: clamp(48px, 6vw, 80px);
+  }
+  .req {
+    background: #fff;
+    border: 1px solid var(--line-light);
+    padding: 36px 32px 40px;
+  }
+  .req__name { font-size: 24px; letter-spacing: 0.1em; }
+  .req__items { margin-top: 20px; }
+  .req__items li {
+    position: relative;
+    padding: 6px 0 6px 20px;
+    font-size: 14px;
+    line-height: 1.9;
+    color: #4f4d48;
+  }
+  .req__items li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 1em;
+    width: 8px;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.4;
+  }
+
+  @media (max-width: 760px) {
+    .reqs__list { grid-template-columns: 1fr; }
+  }
+</style>

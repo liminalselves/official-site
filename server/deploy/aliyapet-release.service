@@ -1,0 +1,26 @@
+[Unit]
+Description=Aliya Pet release service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node /opt/aliyapet/server/index.mjs
+Environment=HOST=127.0.0.1
+Environment=PORT=8787
+Environment=DATA_DIR=/var/lib/aliyapet
+# Optional: raises the GitHub API limit; a read-only token is enough.
+# Environment=GITHUB_TOKEN=
+# Not DynamicUser: its /var/lib/private parent is 0700 and would hide the files from Nginx.
+# Create once with: useradd --system --no-create-home --shell /usr/sbin/nologin aliyapet
+User=aliyapet
+Group=aliyapet
+StateDirectory=aliyapet
+# Nginx serves /files straight from the state directory, so keep it world-readable.
+StateDirectoryMode=0755
+UMask=0022
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,6 +1,12 @@
 # 阈界人格官方网站
 
-阈界人格（Liminal Selves）项目组门户首页，基于 [Astro](https://astro.build/) 静态生成：<https://www.liminalselves.top>
+本仓库包含两个站点和一个后端服务：
+
+- 阈界人格（Liminal Selves）项目组门户首页：<https://www.liminalselves.top>
+- Aliya Pet 下载页：<https://aliyapet.liminalselves.top>
+- Aliya Pet 发布服务（`server/`）：从 GitHub Release 镜像安装包，并为下载页和客户端提供版本接口
+
+两个站点都用 [Astro](https://astro.build/) 静态生成。下载页复用主站的样式、字体、Nav 和 Footer。
 
 ## 本地开发
 
@@ -9,15 +15,21 @@ npm ci            # 按锁定版本安装依赖（Node >= 22.12）
 npm run dev       # 开发服务器，默认 4321 端口
 npm run build     # 生成 dist/
 npm run preview   # 预览构建结果
+
+npm run dev:aliyapet     # 下载页开发服务器；/api、/download、/files 代理到 127.0.0.1:8787
+npm run build:aliyapet   # 生成 dist-aliyapet/
+npm run test:server      # 发布服务测试（使用伪造的 GitHub API）
+node server/index.mjs    # 本地运行发布服务，数据写入 ./data
 ```
 
 Astro 锁定在 7.4.1：7.4.2 起要求 Node >= 22.23.4。
 
 ## 修改内容
 
-- 文案、链接、联系方式、项目列表统一在 `src/data/site.ts`，组件只负责展示。
+- 文案、链接、联系方式、项目列表统一在 `src/data/site.ts`，组件只负责展示。下载页的文案在 `sites/aliyapet/data/pet.ts`。
+- 主站和下载页之间的链接不写死域名：链接带 `data-sibling="www|aliyapet"`，构建时默认指向 liminalselves.top，运行时由 `src/scripts/sibling.ts` 换成当前访问的根域名。
 - 搜索引擎站长验证码填入 `site.verification`（百度 / Google / Bing），对应 meta 会自动输出。
-- 改动任何页面文字后运行 `npm run font`（需要 Python 的 `fonttools` 和 `brotli`），重新生成只包含站内用字的标题字体 `public/fonts/noto-serif-sc-600.woff2`；否则新字会退回系统衬线体。
+- 改动任何页面文字（包括 `sites/`）后运行 `npm run font`（需要 Python 的 `fonttools` 和 `brotli`），重新生成只包含站内用字的标题字体 `public/fonts/noto-serif-sc-600.woff2`；否则新字会退回系统衬线体。
 - 替换 `src/assets/brand/logo.jpg` 后运行 `npm run assets`，重新生成透明标志、favicon 和 `og.png` 分享图。
 
 ## SEO
@@ -68,6 +80,36 @@ server {
 }
 ```
 
+## Aliya Pet 发布服务
+
+服务每 10 分钟用 ETag 轮询一次 `liminalselves/Aliya_pet` 的最新 Release。发现新版本后，它把安装包下载到 `DATA_DIR/releases/<版本>/`，用 GitHub 提供的 sha256 校验通过后再切换到新版本，并保留最近 2 个版本。
+
+Release 说明来自 Aliya_pet 仓库 `CHANGELOG.md` 中对应版本的小节，由 Aliya_pet 的发版 CI 写入。在小节里加一行 `<!-- min-version: x.y.z -->`，低于该版本的客户端就必须更新。
+
+接口返回的链接都使用请求的域名，所以多个域名可以同时使用。
+
+| 接口 | 用途 |
+| --- | --- |
+| `GET /api/latest` | 下载页：版本、日期、更新日志、各平台文件（大小、sha256、地址） |
+| `GET /api/check?platform=windows\|android&version=x.y.z` | 客户端启动检查：是否有更新、是否强制、下载地址 |
+| `GET /api/tauri/{target}/{arch}/{version}` | Tauri updater 端点：返回 204 或已签名的 NSIS 安装包 |
+| `GET /download/windows\|windows-msi\|android` | 302 跳转到最新安装包，可作为固定分享链接 |
+| `GET /files/<版本>/<文件名>` | 镜像的安装包文件，生产环境由 Nginx 直接提供 |
+
+环境变量：`PORT`（默认 8787）、`DATA_DIR`、`GITHUB_TOKEN`（可选）、`SYNC_INTERVAL_MINUTES`、`KEEP_VERSIONS`。
+
+部署：CI 把 `dist-aliyapet/` 和 `server/` 发布到 `deploy-aliyapet` 分支，对应目录分别是 `site/` 和 `server/`。服务器上需要 Node ≥ 20。
+
+```bash
+sudo git clone -b deploy-aliyapet https://github.com/liminalselves/official-site /opt/aliyapet
+sudo useradd --system --no-create-home --shell /usr/sbin/nologin aliyapet
+sudo cp /opt/aliyapet/server/deploy/aliyapet-release.service /etc/systemd/system/
+sudo systemctl enable --now aliyapet-release
+# Nginx 参考 /opt/aliyapet/server/deploy/nginx-aliyapet.conf，配好证书后 reload
+# 之后每次更新
+cd /opt/aliyapet && sudo git pull && sudo systemctl restart aliyapet-release
+```
+
 ## 结构
 
 ```
@@ -76,6 +118,7 @@ src/
 ├── layouts/Base.astro  # <head>、SEO、JSON-LD
 ├── components/         # Nav / Hero / About / Projects / Capabilities / Join / Footer
 ├── scripts/motion.ts   # 星点背景、视差、卡片倾斜、滚动揭示、复制群号
+├── scripts/sibling.ts  # 主站 / 下载页互跳的域名改写
 ├── styles/global.css   # 设计令牌、按钮、揭示动画
 └── pages/              # index、404
 scripts/                # gen-assets.mjs（品牌图）、subset-font.py（字体子集）

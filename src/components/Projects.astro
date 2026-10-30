@@ -27,7 +27,7 @@ const gauges = ['O2', 'H2O', 'ENG'];
         <h2 id="projects-title" class="section-title" data-reveal style="--d:1">我们正在做的事</h2>
       </div>
       <p class="projects__intro" data-reveal style="--d:2">
-        三个入口，同一个账号。社区是起点，Aliya Web 和官方 App 让你在任何设备上都能继续对话。
+        四个入口，同一个账号。社区是起点，Aliya Web、官方 App 与 Aliya Pet 覆盖网页、手机与桌面。
       </p>
     </div>
 
@@ -135,6 +135,44 @@ const gauges = ['O2', 'H2O', 'ENG'];
                   <circle class="pulse pulse--ring" cx="160" cy="160" r="10" />
                 </svg>
               )}
+              {p.shape === 'pet' && (
+                <svg viewBox="0 0 320 220">
+                  <rect class="pet-win" x="30" y="24" width="260" height="172" rx="12" />
+                  <line class="pet-titlebar" x1="30" y1="52" x2="290" y2="52" />
+                  <circle class="pet-dot" cx="46" cy="38" r="3" />
+                  <circle class="pet-dot" cx="58" cy="38" r="3" />
+                  <circle class="pet-dot" cx="70" cy="38" r="3" />
+                  <rect class="pet-pill" x="230" y="34" width="46" height="8" rx="4" />
+                  <rect class="pet-icon" x="44" y="64" width="16" height="14" rx="3" />
+                  <rect class="pet-icon-label" x="41" y="84" width="22" height="4" rx="2" />
+                  <rect class="pet-icon" x="44" y="98" width="16" height="14" rx="3" />
+                  <rect class="pet-icon-label" x="41" y="118" width="22" height="4" rx="2" />
+                  <g class="pet-bubble">
+                    <rect x="112" y="64" width="54" height="28" rx="10" />
+                    <path class="pet-bubble-tail" d="M132 91 L127 101 L143 91 Z" />
+                    <circle class="tl-typing" cx="126" cy="78" r="2.6" />
+                    <circle class="tl-typing tl-typing--2" cx="136" cy="78" r="2.6" />
+                    <circle class="tl-typing tl-typing--3" cx="146" cy="78" r="2.6" />
+                  </g>
+                  <g class="pet-body">
+                    <rect class="pet-figure" x="170" y="84" width="30" height="40" rx="15" />
+                    <circle class="pet-eye" cx="179" cy="101" r="2.2" />
+                    <circle class="pet-eye" cx="191" cy="101" r="2.2" />
+                  </g>
+                  <ellipse class="pet-shadow" cx="185" cy="158" rx="22" ry="4" />
+                  <g class="pet-toast">
+                    <rect x="196" y="128" width="88" height="30" rx="9" />
+                    <circle class="pet-refresh" cx="210" cy="143" r="6.5" />
+                    <path class="pet-refresh-arrow" d="M214.5 136.5 L216.5 140.5 L212 141.5" />
+                    <rect class="pet-toast-bar" x="224" y="137" width="44" height="5" rx="2.5" />
+                    <rect class="pet-toast-bar pet-toast-bar--2" x="224" y="147" width="30" height="4" rx="2" />
+                  </g>
+                  <line class="pet-taskbar" x1="30" y1="172" x2="290" y2="172" />
+                  <rect class="pet-icon" x="40" y="179" width="13" height="11" rx="2.5" />
+                  <rect class="pet-icon" x="59" y="179" width="13" height="11" rx="2.5" />
+                  <rect class="pet-pill" x="256" y="181" width="24" height="7" rx="3.5" />
+                </svg>
+              )}
               <span class="card__index">{p.index}</span>
             </div>
 
@@ -144,8 +182,8 @@ const gauges = ['O2', 'H2O', 'ENG'];
               <p class="card__summary">{p.summary}</p>
               {p.note && <p class="card__note">{p.note}</p>}
               <div class="card__actions">
-                <a class="btn btn--dark" href={p.href} rel="noopener"><span>{p.cta}</span><span class="arrow" aria-hidden="true">→</span></a>
-                <a class="card__docs" href={p.docs} rel="noopener">{p.name}使用说明</a>
+                <a class="btn btn--dark" href={p.href} data-sibling={p.sibling} rel="noopener"><span>{p.cta}</span><span class="arrow" aria-hidden="true">→</span></a>
+                <a class="card__docs" href={p.docs} rel="noopener">{p.docsLabel ?? `${p.name}使用说明`}</a>
               </div>
             </div>
             <span class="card__shine" aria-hidden="true"></span>
@@ -172,7 +210,7 @@ const gauges = ['O2', 'H2O', 'ENG'];
 
   .cards {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 24px;
     margin-top: clamp(48px, 6vw, 80px);
     perspective: 1200px;
@@ -293,6 +331,34 @@ const gauges = ['O2', 'H2O', 'ENG'];
   .pulse { fill: #e9e7e2; }
   .pulse--ring { fill: none; stroke: #e9e7e2; transform-origin: 160px 160px; animation: ping 2.6s ease-out infinite; }
 
+  /* Pet card: abstract desktop window with a floating figure, typing bubble and update toast. */
+  .pet-win { fill: #232326; stroke: rgba(255, 255, 255, 0.12); }
+  .pet-titlebar, .pet-taskbar { stroke: rgba(255, 255, 255, 0.1); }
+  .pet-dot { fill: rgba(255, 255, 255, 0.28); }
+  .pet-pill { fill: rgba(255, 255, 255, 0.16); }
+  .pet-icon { fill: none; stroke: rgba(255, 255, 255, 0.35); }
+  .pet-icon-label { fill: rgba(255, 255, 255, 0.18); }
+  .pet-figure { fill: #e9e7e2; }
+  .pet-eye { fill: #1d1d20; }
+  .pet-body { animation: petFloat 4.5s ease-in-out infinite; }
+  .pet-shadow { fill: rgba(0, 0, 0, 0.4); transform-box: fill-box; transform-origin: center; animation: petShadow 4.5s ease-in-out infinite; }
+  .pet-bubble rect { fill: rgba(255, 255, 255, 0.08); stroke: rgba(255, 255, 255, 0.22); }
+  .pet-bubble-tail { fill: rgba(255, 255, 255, 0.08); stroke: none; }
+  .pet-toast rect { fill: #2d2d2d; stroke: rgba(255, 255, 255, 0.16); }
+  .pet-toast { animation: petToast 9s var(--ease) infinite both; }
+  .pet-toast-bar { fill: rgba(255, 255, 255, 0.4); }
+  .pet-toast-bar--2 { fill: rgba(255, 255, 255, 0.2); }
+  .pet-refresh { fill: none; stroke: #e6a15a; stroke-width: 1.6; stroke-linecap: round; }
+  .pet-refresh-arrow { fill: none; stroke: #e6a15a; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+  @keyframes petFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  @keyframes petShadow { 0%, 100% { transform: scaleX(1); opacity: 1; } 50% { transform: scaleX(0.82); opacity: 0.6; } }
+  @keyframes petToast {
+    0% { opacity: 0; transform: translateY(10px); }
+    10%, 85% { opacity: 1; transform: translateY(0); }
+    93%, 100% { opacity: 1; transform: translateY(0); }
+  }
+
   @keyframes tlScroll { to { transform: translateY(-256px); } }
   @keyframes tlPop {
     0%, 30% { transform: scale(0); opacity: 0; }
@@ -311,6 +377,9 @@ const gauges = ['O2', 'H2O', 'ENG'];
   }
   @keyframes ping { from { transform: scale(1); opacity: 0.8; } to { transform: scale(3); opacity: 0; } }
 
+  @media (max-width: 1199px) {
+    .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
   @media (max-width: 960px) {
     .cards { grid-template-columns: 1fr; max-width: 560px; margin-inline: auto; }
   }

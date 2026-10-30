@@ -17,7 +17,12 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 SHARDS = ROOT / "node_modules/@fontsource/noto-serif-sc/files"
 OUT = ROOT / "public/fonts/noto-serif-sc-600.woff2"
 
-text = "".join(p.read_text(encoding="utf-8") for p in (ROOT / "src").rglob("*") if p.suffix in {".astro", ".ts"})
+text = "".join(
+    p.read_text(encoding="utf-8")
+    for root in (ROOT / "src", ROOT / "sites")
+    for p in root.rglob("*")
+    if p.suffix in {".astro", ".ts"}
+)
 chars = {c for c in text if ord(c) > 0x7F} | {chr(c) for c in range(0x20, 0x7F)}
 chars |= set("，。、：；！？「」『』“”‘’（）《》·—…")
 codepoints = {ord(c) for c in chars}
