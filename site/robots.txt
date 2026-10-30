@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aliyapet.liminalselves.top/sitemap-index.xml
