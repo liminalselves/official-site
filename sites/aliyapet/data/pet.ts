@@ -7,8 +7,7 @@ export const pet = {
   title: 'Aliya Pet 桌面宠物',
   description:
     'Aliya Pet 官方网站：基于 Live2D 的 Windows 与 Android 桌面宠物。查看功能介绍，下载安装包，了解更新日志与常见问题。',
-  intro:
-    '基于 Live2D 的桌面宠物，支持 Windows 与 Android：抚摸与点击互动、对话气泡与按时段问候，接入阈界人格社区智能体聊天。',
+  intro: '基于 Live2D 的桌面宠物，支持 Windows 与 Android',
   repo: 'https://github.com/liminalselves/Aliya_pet',
   disclaimer: '本项目为非官方二次创作，人物出自游戏《彼方的她》，与原作版权方无关。',
 };

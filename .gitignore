@@ -3,4 +3,4 @@ node_modules/
 dist/
 dist-aliyapet/
 .astro/
-.DS_Store
+.DS_Storedata/

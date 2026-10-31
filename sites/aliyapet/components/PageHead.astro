@@ -44,4 +44,9 @@ const hasLead = Astro.slots.has('lead');
     color: var(--paper);
     background: linear-gradient(currentColor, currentColor) left bottom / 100% 1px no-repeat;
   }
+  .phead__lead :global(a.plain) {
+    background: none;
+    transition: color 0.3s;
+  }
+  .phead__lead :global(a.plain:hover) { color: var(--silver); }
 </style>

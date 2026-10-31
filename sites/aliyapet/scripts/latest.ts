@@ -1,5 +1,5 @@
-// Runtime fill from /api/latest for the home hero and the download page.
-// The static build stays valid on its own: buttons point at /download/* which
+// Runtime fill from /api/latest for the download page.
+// The static build stays valid on its own: download buttons point at /download/* which
 // always redirect to the newest file, and version/date text carries a
 // build-time fallback from data/changelog-fallback.ts.
 
@@ -8,38 +8,12 @@ import type { AssetKey } from '../data/pet';
 
 const ASSET_KEYS: AssetKey[] = ['windows', 'windows-msi', 'android'];
 
-function detectOs(): AssetKey | null {
-  const ua = navigator.userAgent;
-  if (/Windows/i.test(ua)) return 'windows';
-  if (/Android/i.test(ua)) return 'android';
-  return null;
-}
-
-// Emphasise the hero button matching the visitor OS; with no match both stand
-// equal. Only runs where a [data-actions] hero button group exists.
-function arrangeButtons(): void {
-  const wrap = document.querySelector<HTMLElement>('[data-actions]');
-  const win = wrap?.querySelector<HTMLAnchorElement>('[data-download="windows"]');
-  const android = wrap?.querySelector<HTMLAnchorElement>('[data-download="android"]');
-  if (!wrap || !win || !android || !win.parentElement) return;
-  const os = detectOs();
-  const primary = os === 'android' ? android : win;
-  const secondary = os === 'android' ? win : android;
-  primary.classList.add('btn--solid');
-  primary.classList.remove('btn--ghost');
-  secondary.classList.toggle('btn--ghost', os !== null);
-  secondary.classList.toggle('btn--solid', os === null);
-  if (primary === android) win.parentElement.insertBefore(android, win);
-}
-
 const setText = (sel: string, text: string) => {
   const el = document.querySelector<HTMLElement>(sel);
   if (el && text) el.textContent = text;
 };
 
 async function init(): Promise<void> {
-  arrangeButtons();
-
   const data = await fetchLatest();
   if (!data) return;
 

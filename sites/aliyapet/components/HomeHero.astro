@@ -1,15 +1,7 @@
 ---
-// Home hero: copy on the left, the interactive PetStage on the right. The
-// version line and button labels get runtime data from /api/latest; the
-// build-time values come from the release fallback.
+// Home hero: copy and two buttons on the left (download page, GitHub), the interactive PetStage on the right.
 import PetStage from './PetStage.astro';
-import { pet, platforms } from '../data/pet';
-import { fallbackReleases } from '../data/changelog-fallback';
-import { fmtDateCN } from '../scripts/api';
-
-const win = platforms.find((p) => p.key === 'windows')!;
-const android = platforms.find((p) => p.key === 'android')!;
-const latest = fallbackReleases[0];
+import { pet } from '../data/pet';
 ---
 
 <section class="hero" aria-labelledby="hero-title">
@@ -21,30 +13,10 @@ const latest = fallbackReleases[0];
       <span class="eyebrow" data-reveal>Desktop Pet · 桌面宠物</span>
       <h1 id="hero-title" class="hero__title serif metal-text" data-reveal style="--d:1">Aliya Pet</h1>
       <p class="hero__intro" data-reveal style="--d:2">{pet.intro}</p>
-      <p class="hero__meta" data-reveal style="--d:3">
-        版本 <span data-meta-version>{latest.version}</span> · 发布于 <span data-meta-date>{fmtDateCN(latest.publishedAt)}</span>
-      </p>
-      <div class="hero__actions" data-actions data-reveal style="--d:4">
-        <a
-          class="btn btn--solid"
-          data-download="windows"
-          data-label={win.label}
-          href="/download/windows"
-          title={win.note}
-        >
-          <span data-size-label>{win.label}</span><span class="arrow" aria-hidden="true">→</span>
-        </a>
-        <a
-          class="btn btn--ghost"
-          data-download="android"
-          data-label={android.label}
-          href="/download/android"
-          title={android.note}
-        >
-          <span data-size-label>{android.label}</span>
-        </a>
+      <div class="hero__actions" data-reveal style="--d:3">
+        <a class="btn btn--solid" href="/download/">下载 Aliya Pet<span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn btn--ghost" href={pet.repo} target="_blank" rel="noopener">查看 GitHub</a>
       </div>
-      <p class="hero__alt" data-reveal style="--d:5"><a href="/download/">查看全部下载选项（含 MSI）</a></p>
       <p class="hero__note" data-reveal style="--d:5">{pet.disclaimer}</p>
     </div>
 
@@ -106,12 +78,6 @@ const latest = fallbackReleases[0];
     line-height: 2;
     color: rgba(244, 241, 236, 0.78);
   }
-  .hero__meta {
-    margin-top: 20px;
-    font-size: 13px;
-    letter-spacing: 0.12em;
-    color: var(--graphite);
-  }
   .hero__actions {
     display: flex;
     flex-wrap: wrap;
@@ -119,14 +85,6 @@ const latest = fallbackReleases[0];
     margin-top: 34px;
   }
   .hero__actions .btn { min-width: 200px; }
-  .hero__alt { margin-top: 20px; font-size: 13px; }
-  .hero__alt a {
-    color: var(--silver);
-    border-bottom: 1px solid rgba(244, 241, 236, 0.28);
-    padding-bottom: 2px;
-    transition: color 0.3s, border-color 0.3s;
-  }
-  .hero__alt a:hover { color: var(--paper); border-color: var(--paper); }
   .hero__note {
     margin-top: 30px;
     font-size: 12px;
