@@ -3,4 +3,6 @@ node_modules/
 dist/
 dist-aliyapet/
 .astro/
-.DS_Storedata/
+.DS_Store
+# Release service data when run locally (node server/index.mjs)
+data/
