@@ -82,13 +82,20 @@ server {
 
 ## Aliya 形象素材
 
-下载页首页的互动形象是从 Aliya Pet 本体渲染出来的分层图，资源和台词都来自 Aliya_pet 仓库（形象只在 aliyapet 站点使用，主站仍只用 logo 与抽象图形）：
+下载站首页的 Aliya 运行的是 Aliya Pet 本体的 Live2D 模型和互动代码，包括物理、视线跟随、表情、动作、点击与抚摸、台词。它以网页嵌入的形式放在 `public/pet/`，由 `sites/aliyapet/components/PetStage.astro` 用 iframe 加载。形象只在 aliyapet 站点使用，主站仍只用 logo 和抽象图形。
 
-- `public/pet/*.webp`、`sites/aliyapet/data/pet-layers.json`：基础形象与各表情、动作帧，由 `scripts/gen-pet-layers.mjs` 生成。只改像素的帧（惊讶、受击）裁成局部图层，改动轮廓的帧存整帧并在显示时替换基础图。
-- `sites/aliyapet/data/pet-lines.json`：台词，摘自 Aliya_pet `redesign/ui/assets/dialogue/`。
-- `sites/aliyapet/scripts/pet-stage.ts`：眨眼、呼吸、问候、按区域点击反应、连点、头顶抚摸、气泡的状态机。
+- 模型加载完成前，以及设备不支持 WebGL2 时，显示静态图 `public/pet-poster/aliya.webp`。
+- 页面上的鼠标位置会转发给嵌入页，所以 Aliya 的视线会跟随整个页面上的光标。
+- 嵌入构建与嵌入模式的差异见 Aliya_pet 仓库的 `docs/EMBED.md`。
 
-模型更新后重新出图：在 Aliya_pet `redesign/ui` 运行 `npx vite --port 5199`，用无头 Edge 打开页面，停掉自动动作、呼吸和眨眼，固定视线，逐个调用 `petAI.express()` / `petAI.play('wave')` 截取 960×1440 的透明 PNG，帧名与 `gen-pet-layers.mjs` 里的 `POSES` 对应（另需 `neutral`）；然后运行 `node scripts/gen-pet-layers.mjs <帧目录>`。
+模型、动作、台词或互动有改动后重新同步：
+
+```bash
+# Aliya_pet 仓库
+cd redesign/ui && npm run build:embed
+# 本仓库
+node scripts/sync-pet-embed.mjs <Aliya_pet>/redesign/ui/dist-embed
+```
 
 ## Aliya Pet 发布服务
 
@@ -133,5 +140,6 @@ src/
 ├── styles/global.css   # 设计令牌、按钮、揭示动画
 └── pages/              # index、404
 sites/aliyapet/         # Aliya Pet 站点（pages / components / layouts / data / scripts）
+public/pet/             # Aliya Pet 网页嵌入（scripts/sync-pet-embed.mjs 生成，勿手改）
 scripts/                # gen-assets.mjs（品牌图）、subset-font.py（字体子集）
 ```

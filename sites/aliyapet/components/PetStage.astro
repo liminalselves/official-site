@@ -1,193 +1,118 @@
 ---
-// Interactive Aliya stage: SVG layers rendered from the Aliya Pet model (scripts/gen-pet-layers.mjs)
-// with breathing, blinking, pointer lean, per-area click reactions, head petting and the
-// pet's own speech bubble and lines (data/pet-lines.json, copied from the app's dialogue).
-import layers from '../data/pet-layers.json';
-import lines from '../data/pet-lines.json';
-
+// The real Aliya Pet: the app's own Live2D renderer, interactions and lines, built as a web
+// embed in the Aliya_pet repo and copied to public/pet/ (scripts/sync-pet-embed.mjs).
+// A still image of the same model shows until the embed reports ready, and stays if WebGL
+// or loading fails.
 interface Props {
   class?: string;
 }
 const { class: className } = Astro.props;
-
-const { width: W, height: H } = layers;
-// Extra room above the head for the bubble and below the feet for the shadow.
-const view = { x: -40, y: -150, w: W + 80, h: H + 200 };
-const poses = Object.entries(layers.layers) as [string, { x: number; y: number; w: number; h: number; full?: boolean }][];
-
-// Hit areas in base-image pixels, checked in order (first match wins).
-const areas = [
-  { id: 'ear', cx: 118, cy: 112, rx: 82, ry: 95 },
-  { id: 'ear', cx: 528, cy: 104, rx: 82, ry: 95 },
-  { id: 'face', cx: 330, cy: 470, rx: 140, ry: 105 },
-  { id: 'head', cx: 336, cy: 215, rx: 235, ry: 155 },
-  { id: 'hair', cx: 560, cy: 420, rx: 150, ry: 260 },
-  { id: 'hand', cx: 110, cy: 800, rx: 70, ry: 80 },
-  { id: 'hand', cx: 560, cy: 800, rx: 70, ry: 80 },
-  { id: 'body', cx: 336, cy: 820, rx: 230, ry: 290 },
-];
 ---
 
-<div
-  class:list={['pet-stage', className]}
-  data-pet-stage
-  data-lines={JSON.stringify(lines)}
-  data-areas={JSON.stringify(areas)}
-  data-full={JSON.stringify(Object.fromEntries(poses.map(([n, l]) => [n, Boolean(l.full)])))}
-  style={`aspect-ratio: ${view.w} / ${view.h}`}
->
-  <svg
-    class="pet-stage__svg"
-    viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
-    role="img"
-    aria-label="Aliya Pet 桌宠形象，可点击或在头顶左右滑动抚摸"
-  >
-    <ellipse class="pet-stage__shadow" cx={W / 2 - 40} cy={H - 6} rx="210" ry="26" />
-    <g class="pet-stage__lean">
-      <g class="pet-stage__breath">
-        <image class="pet-stage__layer is-on" data-pose="base" href="/pet/base.webp" width={W} height={H} />
-        {
-          poses.map(([name, l]) => (
-            <image
-              class="pet-stage__layer"
-              data-pose={name}
-              data-href={`/pet/${name}.webp`}
-              x={l.x}
-              y={l.y}
-              width={l.w}
-              height={l.h}
-            />
-          ))
-        }
-      </g>
-    </g>
-    <rect class="pet-stage__hit" x="0" y="0" width={W} height={H} fill="transparent" />
-  </svg>
-  <p class="pet-stage__bubble" aria-live="polite" hidden></p>
-  <button class="pet-stage__chat" type="button">
-    <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M3 3.5h10a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H7l-3 2.5v-2.5H3a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" /></svg>
-    聊天
-  </button>
+<div class:list={['pet-stage', className]} data-pet-stage>
+  <img
+    class="pet-stage__poster"
+    src="/pet-poster/aliya.webp"
+    width="765"
+    height="1108"
+    alt="Aliya Pet 桌宠形象"
+    decoding="async"
+    fetchpriority="high"
+  />
+  <iframe
+    class="pet-stage__frame"
+    title="Aliya Pet 互动形象：点击她，或按住头顶左右滑动抚摸"
+    data-src="/pet/embed.html"
+  ></iframe>
+  <p class="pet-stage__hint"><span class="pet-stage__mouse">点击她，或按住头顶左右滑动</span><span class="pet-stage__touch">轻点她，或在头顶左右滑动</span></p>
 </div>
 
 <style>
-  /* Bubble and chat pill copy the Aliya Pet app tokens (redesign/ui/src/styles/tokens.css). */
   .pet-stage {
-    --al-bg-2: #211f1e;
-    --al-bg-3: #2a2826;
-    --al-line: rgba(255, 246, 236, 0.07);
-    --al-line-strong: rgba(255, 246, 236, 0.13);
-    --al-text-1: #f2eeea;
-    --al-text-2: #bab3ac;
-    --al-ease: cubic-bezier(0.2, 0, 0, 1);
     position: relative;
     width: 100%;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: pan-y;
+    aspect-ratio: 2 / 3;
   }
-  .pet-stage__svg { display: block; width: 100%; height: 100%; overflow: visible; }
-  .pet-stage__shadow { fill: rgba(0, 0, 0, 0.35); filter: blur(6px); transform-origin: 342px 1102px; }
-  .pet-stage__lean {
-    transform-origin: 342px 1100px;
-    transition: transform 0.6s var(--al-ease);
-  }
-  .pet-stage__breath { transform-origin: 342px 1100px; }
-  .pet-stage__layer { opacity: 0; }
-  .pet-stage__layer.is-on { opacity: 1; }
-  .pet-stage__layer.is-fading { transition: opacity 0.18s linear; }
-  .pet-stage__hit { cursor: pointer; }
-  .pet-stage.is-petting .pet-stage__hit { cursor: grabbing; }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .pet-stage__breath { animation: pet-breath 3.6s ease-in-out infinite; }
-    .pet-stage__shadow { animation: pet-shadow 3.6s ease-in-out infinite; }
-    .pet-stage.is-bounce .pet-stage__breath { animation: pet-bounce 0.42s var(--al-ease); }
-  }
-  @keyframes pet-breath {
-    0%, 100% { transform: scale(1, 1); }
-    50% { transform: scale(1.006, 1.014); }
-  }
-  @keyframes pet-shadow {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(0.97); opacity: 0.85; }
-  }
-  @keyframes pet-bounce {
-    0% { transform: scale(1, 1); }
-    35% { transform: scale(1.02, 0.975); }
-    70% { transform: scale(0.99, 1.02); }
-    100% { transform: scale(1, 1); }
-  }
-
-  .pet-stage__bubble {
+  .pet-stage__poster,
+  .pet-stage__frame {
     position: absolute;
-    top: 1%;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  /* The model renders with a 1.22 margin around its bounds; match that framing for the poster. */
+  .pet-stage__poster {
+    object-fit: contain;
+    padding: 9% 9% 7%;
+    box-sizing: border-box;
+    transition: opacity 0.5s var(--ease);
+  }
+  .pet-stage__frame {
+    border: 0;
+    background: transparent;
+    color-scheme: normal;
+    opacity: 0;
+    transition: opacity 0.5s var(--ease);
+  }
+  .pet-stage.is-live .pet-stage__frame { opacity: 1; }
+  .pet-stage.is-live .pet-stage__poster { opacity: 0; pointer-events: none; }
+  .pet-stage__hint {
+    position: absolute;
     left: 0;
     right: 0;
-    margin: 0 auto;
-    box-sizing: border-box;
-    width: fit-content;
-    max-width: 88%;
-    padding: 0.45em 0.8em 0.5em;
-    border-radius: 0.8em;
-    border: 1px solid var(--al-line);
-    background: var(--al-bg-2);
-    color: var(--al-text-1);
-    font-family: var(--serif);
-    font-size: clamp(14px, 4.4cqw, 19px);
-    line-height: 1.6;
-    letter-spacing: 0.02em;
-    pointer-events: none;
-    z-index: 2;
-    animation: pet-bubble-in 0.24s var(--al-ease);
-  }
-  .pet-stage__bubble[hidden] { display: none; }
-  .pet-stage__bubble::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    bottom: -0.27em;
-    width: 0.5em;
-    height: 0.5em;
-    margin-left: -0.25em;
-    background: inherit;
-    border-right: 1px solid var(--al-line);
-    border-bottom: 1px solid var(--al-line);
-    transform: rotate(45deg);
-  }
-  .pet-stage__bubble.is-closing {
+    bottom: -28px;
+    text-align: center;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--graphite);
     opacity: 0;
-    translate: 0 3px;
-    transition: opacity 0.18s ease-in, translate 0.18s ease-in;
+    transition: opacity 0.5s var(--ease) 0.4s;
   }
-  @keyframes pet-bubble-in {
-    from { opacity: 0; translate: 0 4px; }
+  .pet-stage.is-live .pet-stage__hint { opacity: 1; }
+  .pet-stage__touch { display: none; }
+  @media (hover: none) and (pointer: coarse) {
+    .pet-stage__mouse { display: none; }
+    .pet-stage__touch { display: inline; }
   }
-  .pet-stage { container-type: inline-size; }
-
-  .pet-stage__chat {
-    position: absolute;
-    left: 50%;
-    bottom: 0;
-    translate: -50% 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    height: 30px;
-    padding: 0 14px;
-    border: 1px solid var(--al-line-strong);
-    border-radius: 999px;
-    background: rgba(28, 26, 25, 0.86);
-    color: var(--al-text-2);
-    font: 13px/1 system-ui, sans-serif;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-  }
-  .pet-stage__chat:hover { background: #3a3734; color: var(--al-text-1); }
-  .pet-stage__chat:focus-visible { outline: 2px solid #e29ba3; outline-offset: 2px; }
 </style>
 
 <script>
-  import { mountPetStage } from '../scripts/pet-stage';
-  document.querySelectorAll<HTMLElement>('[data-pet-stage]').forEach(mountPetStage);
+  // Load the embed only when WebGL2 is available; otherwise keep the poster.
+  const hasWebGL2 = (() => {
+    try {
+      return !!document.createElement('canvas').getContext('webgl2');
+    } catch {
+      return false;
+    }
+  })();
+
+  document.querySelectorAll<HTMLElement>('[data-pet-stage]').forEach((stage) => {
+    const frame = stage.querySelector<HTMLIFrameElement>('.pet-stage__frame');
+    if (!frame || !hasWebGL2) return;
+    window.addEventListener('message', (e) => {
+      if (e.source !== frame.contentWindow || e.data?.source !== 'aliya-pet') return;
+      if (e.data.type === 'ready') stage.classList.add('is-live');
+      if (e.data.type === 'error') frame.remove();
+    });
+    // Mouse moves outside the iframe never reach it; forward them (in the iframe's own
+    // coordinates) so Aliya keeps looking at the cursor anywhere on the page.
+    let queued = false;
+    let last: PointerEvent | null = null;
+    document.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse' || !frame.contentWindow) return;
+      last = e;
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        if (!last || !frame.contentWindow) return;
+        const r = frame.getBoundingClientRect();
+        frame.contentWindow.postMessage({ source: 'aliya-pet-host', type: 'look', x: last.clientX - r.left, y: last.clientY - r.top }, location.origin);
+      });
+    });
+    document.documentElement.addEventListener('pointerleave', () => {
+      frame.contentWindow?.postMessage({ source: 'aliya-pet-host', type: 'leave' }, location.origin);
+    });
+    frame.src = frame.dataset.src ?? '';
+  });
 </script>
