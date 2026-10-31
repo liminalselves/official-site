@@ -1,0 +1,162 @@
+---
+// Home hero: copy on the left, the interactive PetStage on the right. The
+// version line and button labels get runtime data from /api/latest; the
+// build-time values come from the release fallback.
+import PetStage from './PetStage.astro';
+import { pet, platforms } from '../data/pet';
+import { fallbackReleases } from '../data/changelog-fallback';
+import { fmtDateCN } from '../scripts/api';
+
+const win = platforms.find((p) => p.key === 'windows')!;
+const android = platforms.find((p) => p.key === 'android')!;
+const latest = fallbackReleases[0];
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <canvas class="hero__field" data-field aria-hidden="true"></canvas>
+  <div class="hero__glow" aria-hidden="true"></div>
+
+  <div class="hero__grid wrap" data-parallax>
+    <div class="hero__text">
+      <span class="eyebrow" data-reveal>Desktop Pet · 桌面宠物</span>
+      <h1 id="hero-title" class="hero__title serif metal-text" data-reveal style="--d:1">Aliya Pet</h1>
+      <p class="hero__intro" data-reveal style="--d:2">{pet.intro}</p>
+      <p class="hero__meta" data-reveal style="--d:3">
+        版本 <span data-meta-version>{latest.version}</span> · 发布于 <span data-meta-date>{fmtDateCN(latest.publishedAt)}</span>
+      </p>
+      <div class="hero__actions" data-actions data-reveal style="--d:4">
+        <a
+          class="btn btn--solid"
+          data-download="windows"
+          data-label={win.label}
+          href="/download/windows"
+          title={win.note}
+        >
+          <span data-size-label>{win.label}</span><span class="arrow" aria-hidden="true">→</span>
+        </a>
+        <a
+          class="btn btn--ghost"
+          data-download="android"
+          data-label={android.label}
+          href="/download/android"
+          title={android.note}
+        >
+          <span data-size-label>{android.label}</span>
+        </a>
+      </div>
+      <p class="hero__alt" data-reveal style="--d:5"><a href="/download/">查看全部下载选项（含 MSI）</a></p>
+      <p class="hero__note" data-reveal style="--d:5">{pet.disclaimer}</p>
+    </div>
+
+    <div class="hero__stage" data-reveal style="--d:2">
+      <PetStage />
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    isolation: isolate;
+    background:
+      radial-gradient(55% 45% at 68% 42%, #1b1b1e 0%, rgba(11, 11, 12, 0) 70%),
+      var(--ink);
+  }
+  .hero__field {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+  }
+  .hero__glow {
+    position: absolute;
+    right: 4vw;
+    top: 44%;
+    width: min(44vw, 620px);
+    aspect-ratio: 1;
+    z-index: -1;
+    translate: 0 -50%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.08), transparent);
+    animation: breathe 9s ease-in-out infinite;
+  }
+
+  .hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: clamp(40px, 6vw, 88px);
+    padding: 148px 0 64px;
+  }
+  .hero__title {
+    margin-top: 18px;
+    font-size: clamp(52px, 6.5vw, 92px);
+    line-height: 1.1;
+    letter-spacing: 0.03em;
+  }
+  .hero__intro {
+    max-width: 560px;
+    margin-top: 26px;
+    font-size: 16px;
+    line-height: 2;
+    color: rgba(244, 241, 236, 0.78);
+  }
+  .hero__meta {
+    margin-top: 20px;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    color: var(--graphite);
+  }
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 34px;
+  }
+  .hero__actions .btn { min-width: 200px; }
+  .hero__alt { margin-top: 20px; font-size: 13px; }
+  .hero__alt a {
+    color: var(--silver);
+    border-bottom: 1px solid rgba(244, 241, 236, 0.28);
+    padding-bottom: 2px;
+    transition: color 0.3s, border-color 0.3s;
+  }
+  .hero__alt a:hover { color: var(--paper); border-color: var(--paper); }
+  .hero__note {
+    margin-top: 30px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--graphite);
+  }
+
+  .hero__stage {
+    position: relative;
+    width: clamp(280px, 30vw, 420px);
+  }
+  .hero__stage::before {
+    content: '';
+    position: absolute;
+    inset: -8% -14%;
+    z-index: -1;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.07), transparent 72%);
+  }
+
+  @keyframes breathe {
+    50% { transform: scale(1.1); opacity: 0.7; }
+  }
+
+  @media (max-width: 900px) {
+    .hero { background: radial-gradient(60% 40% at 50% 30%, #1b1b1e 0%, rgba(11, 11, 12, 0) 70%), var(--ink); }
+    .hero__grid { grid-template-columns: 1fr; padding: 136px 0 72px; }
+    .hero__stage { width: 280px; margin-inline: auto; }
+  }
+  @media (max-width: 520px) {
+    .hero__actions .btn { min-width: 100%; }
+  }
+</style>

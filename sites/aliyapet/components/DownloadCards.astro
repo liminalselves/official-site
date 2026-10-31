@@ -1,0 +1,131 @@
+---
+// Platform cards for the download page. Version, size, file URL and SHA-256
+// are refreshed at runtime from /api/latest; the build shows the fallback
+// version and placeholder size/hash.
+import { platforms } from '../data/pet';
+import { fallbackReleases } from '../data/changelog-fallback';
+
+const version = fallbackReleases[0].version;
+---
+
+<section class="cards light" aria-labelledby="cards-title">
+  <div class="wrap">
+    <span class="eyebrow" data-reveal>Packages · 安装包</span>
+    <h2 id="cards-title" class="section-title" data-reveal style="--d:1">选择安装包</h2>
+
+    <ul class="cards__list">
+      {platforms.map((p, i) => (
+        <li class="card" data-reveal style={`--d:${i}`}>
+          <div class="card__head">
+            <h3 class="card__name serif">{p.title}</h3>
+            {p.recommended && <span class="card__rec">推荐</span>}
+          </div>
+          <p class="card__note">{p.note}</p>
+          <p class="card__meta">
+            版本 <span data-version={p.key}>{version}</span> · 大小 <span data-size={p.key}>—</span>
+          </p>
+          <a
+            class="btn btn--dark card__btn"
+            data-download={p.key}
+            data-label={p.label}
+            href={`/download/${p.key}`}
+            title={p.note}
+          >
+            <span>{p.label}</span>
+          </a>
+          <div class="card__sum" data-checksum={p.key}>
+            <span class="card__sum-label">SHA-256</span>
+            <code class="card__hash" data-sha>—</code>
+            <button class="card__copy" type="button" data-copy hidden>
+              <span data-copy-label>复制</span>
+            </button>
+          </div>
+          {p.tip && <p class="card__tip">{p.tip}</p>}
+        </li>
+      ))}
+    </ul>
+
+    <p class="cards__log" data-reveal>想了解每个版本的变化？<a href="/changelog/">查看更新日志</a>。</p>
+  </div>
+</section>
+
+<style>
+  .cards {
+    padding: clamp(48px, 7vw, 96px) 0;
+  }
+
+  .cards__list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: clamp(48px, 6vw, 80px);
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    padding: 32px 28px 28px;
+    background: #fff;
+    border: 1px solid var(--line-light);
+  }
+  .card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .card__name { font-size: 22px; letter-spacing: 0.08em; }
+  .card__rec {
+    padding: 3px 12px;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--paper);
+    background: var(--ink);
+    border-radius: 999px;
+  }
+  .card__note { margin-top: 10px; font-size: 13px; color: #8a8780; }
+  .card__meta { margin-top: 20px; font-size: 13px; color: #4f4d48; }
+  .card__btn { margin-top: 18px; width: 100%; height: 48px; }
+  .card__sum {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--line-light);
+  }
+  .card__sum-label { font-size: 11px; letter-spacing: 0.14em; color: #8a8780; }
+  .card__hash {
+    flex: 1;
+    min-width: 0;
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 12px;
+    color: #57554f;
+    word-break: break-all;
+  }
+  .card__copy {
+    flex: none;
+    padding: 6px 14px;
+    font: inherit;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid rgba(11, 11, 12, 0.3);
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.3s, color 0.3s;
+  }
+  .card__copy:hover { background: var(--ink); color: var(--paper); }
+  .card__tip { margin-top: 14px; font-size: 12px; line-height: 1.8; color: #8a8780; }
+
+  .cards__log { margin-top: 44px; font-size: 14px; color: #57554f; }
+  .cards__log a {
+    color: var(--ink);
+    background: linear-gradient(currentColor, currentColor) left bottom / 100% 1px no-repeat;
+  }
+
+  @media (max-width: 960px) {
+    .cards__list { grid-template-columns: 1fr; max-width: 640px; }
+  }
+</style>

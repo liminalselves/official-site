@@ -1,0 +1,22 @@
+---
+import Page from '../../layouts/Page.astro';
+import PageHead from '../../components/PageHead.astro';
+import ChangelogTimeline from '../../components/ChangelogTimeline.astro';
+import { pet } from '../../data/pet';
+---
+
+<Page
+  title="更新日志 · Aliya Pet"
+  description="Aliya Pet 各版本的更新内容，包含每个版本的新增、改进与修复，重要更新会标注最低可用版本。"
+>
+  <PageHead eyebrow="Changelog · 更新日志" title="更新日志">
+    <p slot="lead">
+      每个版本的新增、改进与修复，新版本在前。<a data-release href={`${pet.repo}/releases`} target="_blank" rel="noopener">在 GitHub 查看全部版本</a>。
+    </p>
+  </PageHead>
+  <ChangelogTimeline />
+</Page>
+
+<script>
+  import '../../scripts/releases';
+</script>

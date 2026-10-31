@@ -89,6 +89,12 @@ before(async () => {
       res.writeHead(200, { 'Content-Type': 'application/json', ETag: etag });
       return res.end(JSON.stringify(release.json(ghBase)));
     }
+    if (url.pathname === '/repos/liminalselves/Aliya_pet/releases') {
+      const old = { tag_name: 'v0.0.9', name: 'Aliya Pet 0.0.9', published_at: '2026-10-01T00:00:00Z', html_url: 'x', body: '旧版说明', draft: false, prerelease: false };
+      const pre = { ...old, tag_name: 'v9.0.0-beta', prerelease: true };
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify([pre, { ...release.json(ghBase), draft: false, prerelease: false }, old]));
+    }
     const m = /^\/dl\/[^/]+\/(.+)$/.exec(url.pathname);
     const buf = m && release.files[decodeURIComponent(m[1])];
     if (buf) return res.writeHead(200).end(buf);
@@ -125,6 +131,15 @@ test('/api/latest describes mirrored files on the requesting host', async () => 
   assert.equal(body.notes, '## 0.2.0\n- 新功能');
   assert.equal(body.assets.android.url, 'https://aliyapet.example.com/files/0.2.0/AliyaPet_v0.2.0.apk');
   assert.equal(body.assets.windows.sha256, sha(release.files['Aliya.Pet_0.2.0_x64-setup.exe']));
+});
+
+test('/api/releases lists published versions newest first', async () => {
+  const { status, body } = await getJson('/api/releases');
+  assert.equal(status, 200);
+  assert.deepEqual(body.releases.map((r) => r.version), ['0.2.0', '0.0.9']);
+  assert.equal(body.releases[0].latest, true);
+  assert.equal(body.releases[0].minVersion, '0.1.5');
+  assert.equal(body.releases[1].notes, '旧版说明');
 });
 
 test('/api/check covers update, mandatory, up to date and bad input', async () => {

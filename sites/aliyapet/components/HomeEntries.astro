@@ -1,0 +1,109 @@
+---
+// Three short entry blocks below the home hero: features / download / changelog.
+// The changelog block's version and date are refreshed at runtime from
+// /api/releases; build-time values come from the release fallback.
+import { fallbackReleases } from '../data/changelog-fallback';
+import { fmtDateCN } from '../scripts/api';
+
+const entries = [
+  {
+    href: '/features/',
+    no: '01',
+    name: '功能',
+    desc: '互动、对话、表情与情绪、聊天，以及 Windows 与 Android 的常驻方式。',
+    go: '查看功能',
+  },
+  {
+    href: '/download/',
+    no: '02',
+    name: '下载',
+    desc: 'Windows 安装程序与 MSI、Android APK，附系统要求与 SHA-256 校验值。',
+    go: '前往下载',
+  },
+  {
+    href: '/changelog/',
+    no: '03',
+    name: '更新日志',
+    desc: `每个版本的新增、改进与修复。当前 <span data-log-version>v${fallbackReleases[0].version}</span> · <span data-log-date>${fmtDateCN(fallbackReleases[0].publishedAt)}</span>`,
+    go: '查看更新日志',
+  },
+];
+---
+
+<section class="entries light" aria-label="站内导航">
+  <div class="wrap">
+    <ol class="entries__list">
+      {entries.map((e, i) => (
+        <li data-reveal style={`--d:${i}`}>
+          <a class="entry" href={e.href}>
+            <span class="entry__no">{e.no}</span>
+            <h2 class="entry__name serif">{e.name}</h2>
+            <p class="entry__desc" set:html={e.desc} />
+            <span class="entry__go">{e.go}<span aria-hidden="true">→</span></span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .entries {
+    padding: clamp(56px, 7vw, 96px) 0 clamp(96px, 12vw, 152px);
+  }
+
+  .entries__list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line-light);
+    border-left: 1px solid var(--line-light);
+  }
+  .entry {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 36px 28px 32px;
+    border-right: 1px solid var(--line-light);
+    border-bottom: 1px solid var(--line-light);
+    overflow: hidden;
+    isolation: isolate;
+    transition: color 0.5s var(--ease);
+  }
+  /* Diagonal wipe echoing the feature grid */
+  .entry::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--ink);
+    clip-path: polygon(0 100%, 0 100%, 0 100%);
+    transition: clip-path 0.7s var(--ease);
+  }
+  .entry:hover { color: var(--paper); }
+  .entry:hover::before { clip-path: polygon(0 -60%, 160% 100%, 0 100%); }
+  .entry:hover .entry__desc,
+  .entry:hover .entry__no,
+  .entry:hover .entry__go { color: rgba(244, 241, 236, 0.72); }
+
+  .entry__no { font-size: 12px; letter-spacing: 0.2em; color: #8a8780; transition: color 0.5s; }
+  .entry__name { margin-top: 24px; font-size: 24px; letter-spacing: 0.1em; }
+  .entry__desc { margin-top: 14px; font-size: 14px; line-height: 1.9; color: #4f4d48; transition: color 0.5s; }
+  .entry__go {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 28px;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+    transition: color 0.5s;
+  }
+
+  @media (max-width: 860px) {
+    .entries__list { grid-template-columns: 1fr; }
+  }
+</style>

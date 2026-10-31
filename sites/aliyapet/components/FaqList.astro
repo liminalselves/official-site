@@ -1,0 +1,67 @@
+---
+import { faqs } from '../data/pet';
+---
+
+<section class="faqs" aria-label="常见问题列表">
+  <div class="wrap">
+    <ul class="faqs__list">
+      {faqs.map((f, i) => (
+        <li data-reveal style={`--d:${Math.min(i, 3)}`}>
+          <details class="qa">
+            <summary class="qa__summary">
+              <h3 class="qa__q serif">{f.q}</h3>
+              <span class="qa__icon" aria-hidden="true"></span>
+            </summary>
+            <p class="qa__a">{f.a}</p>
+          </details>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .faqs {
+    padding: clamp(24px, 4vw, 48px) 0 clamp(96px, 13vw, 168px);
+    background: linear-gradient(to bottom, var(--ink-2), var(--ink));
+  }
+
+  .faqs__list {
+    max-width: 860px;
+    border-top: 1px solid var(--line-dark);
+  }
+  .qa { border-bottom: 1px solid var(--line-dark); }
+  .qa__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 24px 0;
+    cursor: pointer;
+    list-style: none;
+  }
+  .qa__summary::-webkit-details-marker { display: none; }
+  .qa__q { font-size: 17px; letter-spacing: 0.06em; line-height: 1.8; }
+  .qa__summary:hover .qa__q { color: var(--paper); }
+  .qa__icon { position: relative; flex: none; width: 14px; height: 14px; }
+  .qa__icon::before,
+  .qa__icon::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+    background: var(--silver);
+    transition: opacity 0.3s;
+  }
+  .qa__icon::before { width: 14px; height: 1px; }
+  .qa__icon::after { width: 1px; height: 14px; }
+  .qa[open] .qa__icon::after { opacity: 0; }
+  .qa__a {
+    max-width: 700px;
+    padding: 2px 0 26px;
+    font-size: 14px;
+    line-height: 2;
+    color: rgba(244, 241, 236, 0.68);
+  }
+</style>

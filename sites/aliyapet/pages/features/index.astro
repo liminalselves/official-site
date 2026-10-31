@@ -1,0 +1,47 @@
+---
+import Page from '../../layouts/Page.astro';
+import PageHead from '../../components/PageHead.astro';
+import Features from '../../components/Features.astro';
+---
+
+<Page
+  title="功能 · Aliya Pet"
+  description="Aliya Pet 的功能一览：抚摸与点击互动、对话气泡、表情与情绪、智能体聊天，以及 Windows 桌面常驻、Android 悬浮窗与自动更新。"
+>
+  <PageHead eyebrow="Features · 功能" title="功能">
+    <p slot="lead">互动、对话、表情、聊天，以及 Windows 与 Android 上的常驻方式与自动更新。</p>
+  </PageHead>
+  <Features />
+
+  <section class="fc light" aria-label="下载入口">
+    <div class="wrap fc__inner">
+      <h2 class="fc__title serif" data-reveal>开始使用</h2>
+      <p class="fc__note" data-reveal style="--d:1">支持 Windows 10 及以上与 Android 8.0 及以上。</p>
+      <div class="fc__actions" data-reveal style="--d:2">
+        <a class="btn btn--dark" href="/download/"><span>下载 Aliya Pet</span><span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn btn--dark fc__ghost" href="/faq/"><span>查看常见问题</span></a>
+      </div>
+    </div>
+  </section>
+</Page>
+
+<style>
+  .fc { padding: clamp(24px, 4vw, 48px) 0 clamp(96px, 13vw, 168px); }
+  .fc__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-top: clamp(48px, 6vw, 88px);
+    border-top: 1px solid var(--line-light);
+  }
+  .fc__title { font-size: clamp(28px, 4vw, 40px); letter-spacing: 0.08em; }
+  .fc__note { margin-top: 16px; font-size: 14px; color: #57554f; }
+  .fc__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 36px; }
+  .fc__ghost { border-color: rgba(11, 11, 12, 0.3); }
+  .fc__ghost:hover { border-color: var(--ink); }
+
+  @media (max-width: 520px) {
+    .fc__actions .btn { min-width: 100%; }
+  }
+</style>

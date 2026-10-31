@@ -1,68 +1,15 @@
 ---
-import Base from '../layouts/Base.astro';
-import Nav from '../../../src/components/Nav.astro';
-import Footer from '../../../src/components/Footer.astro';
-import DownloadHero from '../components/DownloadHero.astro';
-import Features from '../components/Features.astro';
-import Changelog from '../components/Changelog.astro';
-import Requirements from '../components/Requirements.astro';
-import Faq from '../components/Faq.astro';
-import { pet } from '../data/pet';
-import { site, links } from '../../../src/data/site';
+import Page from '../layouts/Page.astro';
+import HomeHero from '../components/HomeHero.astro';
+import HomeEntries from '../components/HomeEntries.astro';
 ---
 
-<Base>
-  <Nav
-    brandHref="https://www.liminalselves.top/"
-    brandSibling="www"
-    brandAria="返回阈界人格官网"
-    links={[
-      { label: '特性', href: '#features' },
-      { label: '更新日志', href: '#changelog' },
-      { label: '常见问题', href: '#faq' },
-    ]}
-    cta={{ label: '下载', href: '#download' }}
-  />
-  <main id="main">
-    <DownloadHero />
-    <Features />
-    <Changelog />
-    <Requirements />
-    <Faq />
-  </main>
-  <Footer
-    brandHref="https://www.liminalselves.top/"
-    brandSibling="www"
-    brandAria="返回阈界人格官网"
-    cols={[
-      {
-        heading: '项目',
-        links: [
-          { label: '阈界人格官网', href: 'https://www.liminalselves.top/', sibling: 'www' },
-          { label: 'Aliya Pet 仓库', href: pet.repo },
-        ],
-      },
-      {
-        heading: '帮助',
-        links: [
-          { label: '使用文档', href: links.docs },
-          { label: '社区规范', href: links.rules },
-        ],
-      },
-      {
-        heading: '联系',
-        links: [
-          { label: `Q 群 ${site.qqGroup}` },
-          { label: site.email, href: `mailto:${site.email}` },
-        ],
-      },
-    ]}
-  />
-</Base>
+<Page>
+  <HomeHero />
+  <HomeEntries />
+</Page>
 
 <script>
-  import '../../../src/scripts/motion';
-  import { applySiblingLinks } from '../../../src/scripts/sibling';
   import '../scripts/latest';
-  applySiblingLinks();
+  import '../scripts/releases';
 </script>

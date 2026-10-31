@@ -1,0 +1,15 @@
+---
+import Page from '../../layouts/Page.astro';
+import PageHead from '../../components/PageHead.astro';
+import FaqList from '../../components/FaqList.astro';
+---
+
+<Page
+  title="常见问题 · Aliya Pet"
+  description="Aliya Pet 常见问题解答：安装提示、版本更新、安装包校验、聊天账号、数据保存与卸载方法。"
+>
+  <PageHead eyebrow="FAQ · 常见问题" title="常见问题">
+    <p slot="lead">安装、更新、账号、数据与卸载相关的问题都在这里。</p>
+  </PageHead>
+  <FaqList />
+</Page>

@@ -17,7 +17,9 @@ export class ReleaseSync {
     this.keepVersions = keepVersions;
     this.log = log;
     this.current = null;
+    this.history = [];
     this.etag = null;
+    this.historyEtag = null;
     this.running = null;
   }
 
@@ -28,19 +30,55 @@ export class ReleaseSync {
     } catch (err) {
       if (err.code !== 'ENOENT') throw err;
     }
+    try {
+      this.history = JSON.parse(await readFile(path.join(this.dataDir, 'history.json'), 'utf8'));
+    } catch (err) {
+      if (err.code !== 'ENOENT') throw err;
+    }
   }
 
   /** Run one sync; concurrent callers share the in-flight run. */
   sync() {
-    this.running ??= this.#sync().catch((err) => this.log.error(`[sync] ${err.message}`)).finally(() => {
+    this.running ??= Promise.all([
+      this.#sync().catch((err) => this.log.error(`[sync] ${err.message}`)),
+      this.#syncHistory().catch((err) => this.log.error(`[history] ${err.message}`)),
+    ]).finally(() => {
       this.running = null;
     });
     return this.running;
   }
 
-  async #sync() {
+  #headers() {
     const headers = { Accept: 'application/vnd.github+json', 'User-Agent': 'aliyapet-release-service' };
     if (this.token) headers.Authorization = `Bearer ${this.token}`;
+    return headers;
+  }
+
+  /** Text-only list of every published version for the changelog page; no files are mirrored. */
+  async #syncHistory() {
+    const headers = this.#headers();
+    if (this.historyEtag) headers['If-None-Match'] = this.historyEtag;
+    const res = await fetch(`${this.apiBase}/repos/${this.repo}/releases?per_page=100`, { headers, signal: AbortSignal.timeout(30_000) });
+    if (res.status === 304) return;
+    if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+    const history = (await res.json())
+      .filter((r) => !r.draft && !r.prerelease && parseVersion(r.tag_name))
+      .map((r) => {
+        const { notes, minVersion } = parseNotes(r.body);
+        const version = r.tag_name.replace(/^v/, '');
+        return { version, name: r.name || `Aliya Pet ${version}`, publishedAt: r.published_at, notes, minVersion, releaseUrl: r.html_url };
+      })
+      .sort((a, b) => compareVersions(b.version, a.version));
+    const file = path.join(this.dataDir, 'history.json');
+    await mkdir(this.dataDir, { recursive: true });
+    await writeFile(`${file}.tmp`, JSON.stringify(history, null, 2));
+    await rename(`${file}.tmp`, file);
+    this.history = history;
+    this.historyEtag = res.headers.get('etag');
+  }
+
+  async #sync() {
+    const headers = this.#headers();
     // A matching ETag answers 304, which GitHub does not count against the rate limit.
     if (this.etag) headers['If-None-Match'] = this.etag;
     const res = await fetch(`${this.apiBase}/repos/${this.repo}/releases/latest`, { headers, signal: AbortSignal.timeout(30_000) });

@@ -5,9 +5,10 @@ import { pet } from '../data/pet';
 interface Props {
   title?: string;
   description?: string;
+  noindex?: boolean;
 }
 
-const { title = pet.title, description = pet.description } = Astro.props;
+const { title = pet.title, description = pet.description, noindex = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, pet.url).href;
 const ogImage = new URL('/og.png', pet.url).href;
 ---
@@ -21,8 +22,8 @@ const ogImage = new URL('/og.png', pet.url).href;
     <meta name="description" content={description} />
     <meta name="keywords" content="Aliya Pet,桌面宠物,Live2D,Aliya,阈界人格,Liminal Selves" />
     <meta name="author" content="阈界人格" />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
-    <link rel="canonical" href={canonical} />
+    <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large'} />
+    {!noindex && <link rel="canonical" href={canonical} />}
     <meta name="theme-color" content="#0b0b0c" />
     <meta name="color-scheme" content="dark light" />
     <meta name="applicable-device" content="pc,mobile" />

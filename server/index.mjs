@@ -55,6 +55,17 @@ function latest(req, current) {
   return { version, name, publishedAt, notes, minVersion, releaseUrl, assets };
 }
 
+/** Every published version, newest first; the served version also carries the mirrored text. */
+function releases(current) {
+  const list = sync.history.length ? [...sync.history] : [];
+  if (current && !list.some((r) => r.version === current.version)) list.unshift(current);
+  return {
+    releases: list.map(({ version, name, publishedAt, notes, minVersion, releaseUrl }) => ({
+      version, name, publishedAt, notes, minVersion, releaseUrl, latest: version === current?.version,
+    })),
+  };
+}
+
 function check(req, current, query) {
   const platform = query.get('platform');
   const version = query.get('version')?.replace(/^v/, '');
@@ -119,6 +130,7 @@ async function handle(req, res) {
   if (parts[0] === 'api' || parts[0] === 'download') {
     if (!current) return send(res, 503, { error: 'no release synced yet' }, { 'Retry-After': '60' });
   }
+  if (parts[0] === 'api' && parts[1] === 'releases' && parts.length === 2) return send(res, 200, releases(current));
   if (parts[0] === 'api' && parts[1] === 'latest' && parts.length === 2) return send(res, 200, latest(req, current));
   if (parts[0] === 'api' && parts[1] === 'check' && parts.length === 2) return send(res, ...check(req, current, url.searchParams));
   if (parts[0] === 'api' && parts[1] === 'tauri' && parts.length === 5) return send(res, ...tauri(req, current, parts[2], parts[3], parts[4]));

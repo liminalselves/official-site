@@ -1,0 +1,47 @@
+---
+// Dark header band shared by the inner pages; the optional lead slot takes
+// plain paragraphs (runtime spans allowed).
+interface Props {
+  eyebrow: string;
+  title: string;
+}
+
+const { eyebrow, title } = Astro.props;
+const hasLead = Astro.slots.has('lead');
+---
+
+<section class="phead">
+  <div class="wrap">
+    <span class="eyebrow" data-reveal>{eyebrow}</span>
+    <h1 class="phead__title serif" data-reveal style="--d:1">{title}</h1>
+    {hasLead && (
+      <div class="phead__lead" data-reveal style="--d:2">
+        <slot name="lead" />
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .phead {
+    padding: clamp(148px, 18vw, 208px) 0 clamp(44px, 6vw, 72px);
+    background: linear-gradient(to bottom, var(--ink), var(--ink-2));
+  }
+  .phead__title {
+    margin-top: 20px;
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.2;
+    letter-spacing: 0.06em;
+  }
+  .phead__lead {
+    max-width: 720px;
+    margin-top: 22px;
+    font-size: 15px;
+    line-height: 2;
+    color: rgba(244, 241, 236, 0.72);
+  }
+  .phead__lead :global(a) {
+    color: var(--paper);
+    background: linear-gradient(currentColor, currentColor) left bottom / 100% 1px no-repeat;
+  }
+</style>

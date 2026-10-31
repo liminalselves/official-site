@@ -1,0 +1,27 @@
+---
+import Page from '../../layouts/Page.astro';
+import PageHead from '../../components/PageHead.astro';
+import DownloadCards from '../../components/DownloadCards.astro';
+import Requirements from '../../components/Requirements.astro';
+import { fallbackReleases } from '../../data/changelog-fallback';
+import { fmtDateCN } from '../../scripts/api';
+
+const latest = fallbackReleases[0];
+---
+
+<Page
+  title="下载 · Aliya Pet"
+  description="下载 Aliya Pet 最新版本：Windows 安装程序、MSI 安装包与 Android APK，附系统要求、安装说明与 SHA-256 校验值。"
+>
+  <PageHead eyebrow="Download · 下载" title="下载">
+    <p slot="lead">
+      当前版本 <span data-meta-version>{latest.version}</span> · 发布于 <span data-meta-date>{fmtDateCN(latest.publishedAt)}</span>，Windows 与 Android 同步更新。
+    </p>
+  </PageHead>
+  <DownloadCards />
+  <Requirements />
+</Page>
+
+<script>
+  import '../../scripts/latest';
+</script>

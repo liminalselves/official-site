@@ -1,0 +1,158 @@
+---
+// Vertical timeline of every release. Rendered at build time from the
+// fallback list, then refreshed at runtime from /api/releases; versions after
+// the first three start collapsed behind the「查看更早的版本」button.
+import { fallbackReleases } from '../data/changelog-fallback';
+import { renderReleaseCard } from '../scripts/releases';
+
+const cards = fallbackReleases.map((r, i) => renderReleaseCard(r, i, i === 0)).join('\n');
+---
+
+<section class="logs" aria-label="版本更新记录">
+  <div class="wrap">
+    <ol class="logs__list" data-releases-list data-reveal set:html={cards} />
+    <div class="logs__more-row">
+      <button class="logs__more" type="button" data-releases-more hidden>查看更早的版本</button>
+    </div>
+  </div>
+</section>
+
+<style>
+  .logs {
+    padding: clamp(24px, 4vw, 48px) 0 clamp(96px, 13vw, 168px);
+    background: linear-gradient(to bottom, var(--ink-2), var(--ink));
+  }
+
+  .logs__list {
+    position: relative;
+    max-width: 880px;
+    margin-inline: auto;
+    padding: 0;
+    list-style: none;
+  }
+  .logs__list::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 14px;
+    bottom: 14px;
+    width: 1px;
+    background: var(--line-dark);
+  }
+
+  /* Card HTML comes from set:html / runtime injection, so it is unscoped. */
+  .logs__list :global(.rel) {
+    position: relative;
+    padding-left: 40px;
+    margin-bottom: 28px;
+  }
+  .logs__list :global(.rel:last-child) { margin-bottom: 0; }
+  .logs__list :global(.rel[hidden]) { display: none; }
+  .logs__list :global(.rel__node) {
+    position: absolute;
+    left: 0;
+    top: 30px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--ink);
+    border: 1px solid var(--silver);
+  }
+  .logs__list :global(.rel__card) {
+    padding: clamp(24px, 4vw, 40px);
+    background: #101013;
+    border: 1px solid var(--line-dark);
+  }
+  .logs__list :global(.rel__head) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+  }
+  .logs__list :global(.rel__version) { font-size: clamp(24px, 3vw, 30px); letter-spacing: 0.06em; }
+  .logs__list :global(.rel__date) { font-size: 13px; letter-spacing: 0.08em; color: var(--graphite); }
+  .logs__list :global(.rel__badges) { display: flex; gap: 8px; }
+  .logs__list :global(.rel__badge) {
+    padding: 3px 12px;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--paper);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 999px;
+  }
+  .logs__list :global(.rel__badge--major) {
+    color: #e6a15a;
+    border-color: rgba(230, 161, 90, 0.5);
+  }
+  .logs__list :global(.rel__min) { width: 100%; margin-top: 4px; font-size: 12px; color: var(--graphite); }
+  .logs__list :global(.rel__summary) { margin-top: 18px; font-size: 15px; line-height: 2; color: rgba(244, 241, 236, 0.85); }
+  .logs__list :global(.rel__summary p + p) { margin-top: 8px; }
+  .logs__list :global(.rel__summary ul) { margin-top: 8px; }
+
+  .logs__list :global(.rel__sec) { margin-top: 28px; }
+  .logs__list :global(.rel__sec h4) {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.12em;
+    color: var(--paper);
+  }
+  .logs__list :global(.rel__sec h4::before) {
+    content: '';
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--graphite);
+  }
+  .logs__list :global(.rel__sec--add h4::before) { background: #9fc7a4; }
+  .logs__list :global(.rel__sec--imp h4::before) { background: var(--silver); }
+  .logs__list :global(.rel__sec--fix h4::before) { background: #e6a15a; }
+  .logs__list :global(.rel__sec ul) { margin-top: 12px; }
+  .logs__list :global(.rel__sec li) {
+    position: relative;
+    padding: 5px 0 5px 18px;
+    font-size: 14px;
+    line-height: 2;
+    color: rgba(244, 241, 236, 0.72);
+  }
+  .logs__list :global(.rel__sec li::before) {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 1.1em;
+    width: 8px;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.5;
+  }
+  .logs__list :global(.rel__sec p) { margin-top: 10px; font-size: 14px; line-height: 2; color: rgba(244, 241, 236, 0.72); }
+  .logs__list :global(.rel__sec strong) { color: var(--paper); font-weight: 600; }
+  .logs__list :global(.rel__sec a),
+  .logs__list :global(.rel__summary a) {
+    color: var(--paper);
+    background: linear-gradient(currentColor, currentColor) left bottom / 100% 1px no-repeat;
+  }
+
+  .logs__more-row { display: flex; justify-content: center; margin-top: 40px; }
+  .logs__more {
+    padding: 12px 32px;
+    font: inherit;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    color: var(--paper);
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+  }
+  .logs__more:hover { background: var(--paper); color: var(--ink); }
+
+  @media (max-width: 560px) {
+    .logs__list :global(.rel) { padding-left: 28px; }
+  }
+</style>

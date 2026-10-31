@@ -5,6 +5,7 @@ interface NavLink {
   label: string;
   href: string;
   sibling?: string;
+  active?: boolean;
 }
 
 interface Props {
@@ -15,6 +16,8 @@ interface Props {
   brandAria?: string;
   links?: NavLink[];
   cta?: NavLink | null;
+  /** Multi-page navigation: keep all links reachable on small screens. */
+  paged?: boolean;
 }
 
 const {
@@ -31,12 +34,13 @@ const {
     { label: '文档', href: siteLinks.docs },
   ],
   cta = { label: '进入社区', href: siteLinks.community },
+  paged = false,
 } = Astro.props;
 
 const rel = (href: string) => (/^https?:/.test(href) ? 'noopener' : undefined);
 ---
 
-<header class="nav" data-nav>
+<header class:list={['nav', { 'nav--paged': paged }]} data-nav>
   <div class="nav__inner wrap">
     <a class="nav__brand" href={brandHref} data-sibling={brandSibling} aria-label={brandAria}>
       <img src="/brand/mark-light-sm.webp" alt="" width="72" height="60" />
@@ -46,14 +50,21 @@ const rel = (href: string) => (/^https?:/.test(href) ? 'noopener' : undefined);
     <nav aria-label="主导航">
       <ul class="nav__links">
         {links.map((l) => (
-          <li><a href={l.href} data-sibling={l.sibling} rel={rel(l.href)}>{l.label}</a></li>
+          <li>
+            <a
+              href={l.href}
+              data-sibling={l.sibling}
+              rel={rel(l.href)}
+              aria-current={l.active ? 'page' : undefined}
+            >{l.label}</a>
+          </li>
         ))}
       </ul>
     </nav>
     {cta && (
       <a class="nav__cta" href={cta.href} data-sibling={cta.sibling} rel={rel(cta.href)}>
         {cta.label}
-        {!cta.href.startsWith('#') && <span aria-hidden="true">↗</span>}
+        {/^https?:/.test(cta.href) && <span aria-hidden="true">↗</span>}
       </a>
     )}
   </div>
@@ -116,6 +127,8 @@ const rel = (href: string) => (/^https?:/.test(href) ? 'noopener' : undefined);
   }
   .nav__links a:hover { color: var(--paper); }
   .nav__links a:hover::after { transform: scaleX(1); transform-origin: left; }
+  .nav__links a[aria-current='page'] { color: var(--paper); }
+  .nav__links a[aria-current='page']::after { transform: scaleX(1); }
   .nav__cta {
     display: inline-flex;
     gap: 6px;
@@ -130,12 +143,32 @@ const rel = (href: string) => (/^https?:/.test(href) ? 'noopener' : undefined);
 
   @media (max-width: 860px) {
     .nav__en { display: none; }
-    .nav__links { gap: 18px; }
-    .nav__links li:nth-child(n + 3) { display: none; }
+    /* Single-page sites keep only the first two links on narrow screens. */
+    .nav:not(.nav--paged) .nav__links { gap: 18px; }
+    .nav:not(.nav--paged) .nav__links li:nth-child(n + 3) { display: none; }
+    .nav--paged .nav__inner { gap: 22px; }
+    .nav--paged .nav__links { gap: 18px; font-size: 13px; }
+  }
+  @media (max-width: 640px) {
+    .nav--paged .nav__inner {
+      flex-wrap: wrap;
+      height: auto;
+      min-height: 60px;
+      padding-block: 10px;
+      row-gap: 6px;
+    }
+    .nav--paged .nav__links {
+      order: 3;
+      width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav--paged .nav__links::-webkit-scrollbar { display: none; }
+    .nav--paged .nav__cta { margin-left: auto; }
   }
   @media (max-width: 520px) {
-    .nav__inner { gap: 16px; height: 60px; }
-    .nav__links { display: none; }
-    .nav__cta { margin-left: auto; }
+    .nav:not(.nav--paged) .nav__inner { gap: 16px; height: 60px; }
+    .nav:not(.nav--paged) .nav__links { display: none; }
+    .nav:not(.nav--paged) .nav__cta { margin-left: auto; }
   }
 </style>
