@@ -31,11 +31,14 @@ export default defineConfig({
       },
     },
   ],
-  server: {
-    proxy: {
-      '/api': RELEASE_ORIGIN,
-      '/download': RELEASE_ORIGIN,
-      '/files': RELEASE_ORIGIN,
+  // Astro's own `server` option has no proxy; it must go through Vite. X-Forwarded-Host keeps
+  // the links the service returns on the dev server's host, like Nginx does in production.
+  vite: {
+    server: {
+      proxy: Object.fromEntries(['/api', '/download', '/files'].map((path) => [path, {
+        target: RELEASE_ORIGIN,
+        configure: (proxy) => proxy.on('proxyReq', (req, incoming) => req.setHeader('X-Forwarded-Host', incoming.headers.host ?? '')),
+      }])),
     },
   },
 });
