@@ -60,6 +60,10 @@ jobs:
               git checkout --orphan "$branch"
             fi
             git rm -rf . --quiet 2>/dev/null || true
+            # 发布分支只收产物，.gitignore 本身也要带上（不随构建输出走）
+            printf 'node_modules/
+.astro/
+' > .gitignore
             cp -r "$src/." .
             git add -A
             # 无内容变化时跳过提交
