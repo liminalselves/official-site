@@ -28,57 +28,43 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Test release service
-        run: npm run test:server
+      - name: Test service
+        run: npm test
 
-      - name: Build Astro
-        run: |
-          npm run build
-          npm run build:aliyapet
+      - name: Build both sites
+        run: npm run build
 
       - name: Deploy to deploy branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # 先把构建产物移出工作区：deploy 分支跟踪过同名旧文件时，
+          # 先把产物移出工作区：目标分支跟踪过同名旧文件时，
           # checkout 会用旧跟踪文件静默覆盖未跟踪的新文件，随后被 git rm 删掉
+          # deploy-server：整套服务（server/ + 两站页面），服务器 git pull 后重启服务即可
+          mkdir -p /tmp/service
+          cp -r server /tmp/service/server
+          rm -rf /tmp/service/server/test
+          cp -r dist /tmp/service/dist
+          mv dist-aliyapet /tmp/service/dist-aliyapet
+          # deploy：主站纯静态页面，供尚未切换到服务的旧部署使用，切换完成后删除这一段
           mv dist /tmp/dist
-          # Aliya Pet 下载页与发布服务另走 deploy-aliyapet 分支：site/ 给 Nginx，server/ 给 systemd
-          mkdir -p /tmp/aliyapet
-          mv dist-aliyapet /tmp/aliyapet/site
-          cp -r server /tmp/aliyapet/server
-          rm -rf /tmp/aliyapet/server/test
 
-          # 拉取远程 deploy 分支，基于最新历史追加提交（保证服务器 git pull 可快进更新）
-          git fetch origin deploy:deploy 2>/dev/null || true
-
-          if git show-ref --verify --quiet refs/heads/deploy; then
-            git checkout deploy
-          else
-            git checkout --orphan deploy
-          fi
-
-          # 清空分支上旧文件
-          git rm -rf . --quiet 2>/dev/null || true
-
-          # 将构建产物复制到分支根目录
-          cp -r /tmp/dist/. .
-
-          git add -A
-          # 无内容变化时跳过提交
-          git diff --cached --quiet || git commit -m "deploy: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-          git push origin deploy
-
-          # 同样方式发布 deploy-aliyapet 分支
-          git fetch origin deploy-aliyapet:deploy-aliyapet 2>/dev/null || true
-          if git show-ref --verify --quiet refs/heads/deploy-aliyapet; then
-            git checkout deploy-aliyapet
-          else
-            git checkout --orphan deploy-aliyapet
-          fi
-          git rm -rf . --quiet 2>/dev/null || true
-          cp -r /tmp/aliyapet/. .
-          git add -A
-          git diff --cached --quiet || git commit -m "deploy: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-          git push origin deploy-aliyapet
+          publish() {
+            branch=$1 src=$2
+            # 基于远程分支最新历史追加提交，保证服务器 git pull 可快进更新
+            git fetch origin "$branch:$branch" 2>/dev/null || true
+            if git show-ref --verify --quiet "refs/heads/$branch"; then
+              git checkout "$branch"
+            else
+              git checkout --orphan "$branch"
+            fi
+            git rm -rf . --quiet 2>/dev/null || true
+            cp -r "$src/." .
+            git add -A
+            # 无内容变化时跳过提交
+            git diff --cached --quiet || git commit -m "deploy: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            git push origin "$branch"
+          }
+          publish deploy-server /tmp/service
+          publish deploy /tmp/dist

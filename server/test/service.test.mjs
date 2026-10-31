@@ -1,8 +1,8 @@
-// End-to-end test against a fake GitHub API: run with `npm run test:server`.
+// End-to-end test of the service against a fake GitHub API and fixture sites: `npm test`.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdtemp, readdir, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -45,11 +45,19 @@ let apiCalls = 0;
 let service;
 let base;
 let dataDir;
+let sitesDir;
+
+// Requests carry a Host header picking the site; Node's fetch cannot set Host, so use X-Forwarded-Host like Nginx.
+const PET = { 'X-Forwarded-Host': 'aliyapet.example.com' };
+const MAIN = { 'X-Forwarded-Host': 'www.example.com' };
 
 async function startService() {
   const port = 20000 + Math.floor(Math.random() * 20000);
   service = spawn(process.execPath, [fileURLToPath(new URL('../index.mjs', import.meta.url))], {
-    env: { ...process.env, PORT: String(port), DATA_DIR: dataDir, GITHUB_API: ghBase, SYNC_INTERVAL_MINUTES: '60' },
+    env: {
+      ...process.env, PORT: String(port), DATA_DIR: dataDir, GITHUB_API: ghBase, SYNC_INTERVAL_MINUTES: '60',
+      MAIN_DIST: path.join(sitesDir, 'main'), ALIYAPET_DIST: path.join(sitesDir, 'aliyapet'),
+    },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   service.stderr.on('data', (d) => process.stderr.write(`[service] ${d}`));
@@ -73,13 +81,28 @@ async function waitFor(fn, ms = 10_000) {
   }
 }
 
-const getJson = async (p, init) => {
-  const res = await fetch(`${base}${p}`, init);
+const pet = (p, init = {}) => fetch(`${base}${p}`, { ...init, headers: { ...PET, ...init.headers } });
+const main = (p, init = {}) => fetch(`${base}${p}`, { ...init, headers: { ...MAIN, ...init.headers } });
+const getJson = async (p, init = {}) => {
+  const res = await pet(p, init);
   return { status: res.status, headers: res.headers, body: res.status === 204 ? null : await res.json() };
 };
 
 before(async () => {
   dataDir = await mkdtemp(path.join(tmpdir(), 'aliyapet-test-'));
+  sitesDir = await mkdtemp(path.join(tmpdir(), 'sites-test-'));
+  const page = async (site, rel, body) => {
+    const file = path.join(sitesDir, site, rel);
+    await mkdir(path.dirname(file), { recursive: true });
+    await writeFile(file, body);
+  };
+  await page('main', 'index.html', '<h1>main home</h1>');
+  await page('main', '404.html', '<h1>main 404</h1>');
+  await page('main', '_astro/app.abc.js', 'console.log(1);'.repeat(200));
+  await page('aliyapet', 'index.html', '<h1>pet home</h1>');
+  await page('aliyapet', '404.html', '<h1>pet 404</h1>');
+  await page('aliyapet', 'download/index.html', '<h1>pet download page</h1>');
+  await page('aliyapet', '.secret', 'nope');
   github = createServer((req, res) => {
     const url = new URL(req.url, 'http://x');
     if (url.pathname === '/repos/liminalselves/Aliya_pet/releases/latest') {
@@ -111,6 +134,7 @@ after(async () => {
   await stopService();
   github.close();
   await rm(dataDir, { recursive: true, force: true });
+  await rm(sitesDir, { recursive: true, force: true });
 });
 
 test('pure helpers', () => {
@@ -124,7 +148,7 @@ test('pure helpers', () => {
 });
 
 test('/api/latest describes mirrored files on the requesting host', async () => {
-  const { status, body } = await getJson('/api/latest', { headers: { 'X-Forwarded-Host': 'aliyapet.example.com', 'X-Forwarded-Proto': 'https' } });
+  const { status, body } = await getJson('/api/latest', { headers: { 'X-Forwarded-Proto': 'https' } });
   assert.equal(status, 200);
   assert.equal(body.version, '0.2.0');
   assert.equal(body.minVersion, '0.1.5');
@@ -160,19 +184,19 @@ test('/api/tauri returns signed update or 204', async () => {
   assert.equal(status, 200);
   assert.equal(body.signature, 'sig-of-0.2.0');
   assert.equal(body.version, '0.2.0');
-  const file = await fetch(body.url);
+  const file = await pet(new URL(body.url).pathname);
   assert.equal(Buffer.from(await file.arrayBuffer()).toString(), 'exe 0.2.0');
   assert.equal((await getJson('/api/tauri/windows/x86_64/0.2.0')).status, 204);
   assert.equal((await getJson('/api/tauri/darwin/aarch64/0.1.0')).status, 204);
 });
 
 test('/download redirects and /files rejects traversal', async () => {
-  const res = await fetch(`${base}/download/windows-msi`, { redirect: 'manual' });
+  const res = await pet('/download/windows-msi', { redirect: 'manual' });
   assert.equal(res.status, 302);
   assert.match(res.headers.get('location'), /Aliya\.Pet_0\.2\.0_x64_zh-CN\.msi$/);
-  assert.equal((await fetch(`${base}/download/linux`)).status, 404);
-  assert.equal((await fetch(`${base}/files/0.2.0/..%2Fcurrent.json`)).status, 404);
-  assert.equal((await fetch(`${base}/files/..%2F..%2Fx/current.json`)).status, 404);
+  assert.equal((await pet('/download/linux')).status, 404);
+  assert.equal((await pet('/files/0.2.0/..%2Fcurrent.json')).status, 404);
+  assert.equal((await pet('/files/..%2F..%2Fx/current.json')).status, 404);
 });
 
 test('unchanged release answers 304 and keeps serving after restart', async () => {
@@ -200,4 +224,45 @@ test('new release replaces the old one; bad digest is rejected; old versions pru
   assert.deepEqual(kept, ['0.3.0', '0.4.0']);
   const latest = await getJson('/api/latest');
   assert.equal(latest.body.minVersion, null);
+});
+
+test('host picks the site; directories, 404 pages and dotfiles behave like Nginx', async () => {
+  assert.equal(await (await main('/')).text(), '<h1>main home</h1>');
+  assert.equal(await (await pet('/')).text(), '<h1>pet home</h1>');
+  const bare = await fetch(`${base}/`, { headers: { 'X-Forwarded-Host': 'example.com' } });
+  assert.equal(await bare.text(), '<h1>main home</h1>', 'bare domain and unknown hosts get the main site');
+
+  const redirect = await pet('/download?x=1', { redirect: 'manual' });
+  assert.equal(redirect.status, 301, '/download without slash is the page, not the API');
+  assert.equal(redirect.headers.get('location'), '/download/?x=1');
+  assert.equal(await (await pet('/download/')).text(), '<h1>pet download page</h1>');
+
+  const missing = await pet('/nope');
+  assert.equal(missing.status, 404);
+  assert.equal(await missing.text(), '<h1>pet 404</h1>');
+  assert.equal((await main('/nope')).status, 404);
+  assert.equal((await pet('/.secret')).status, 404);
+  assert.equal((await pet('/..%2F..%2Fpackage.json')).status, 404);
+
+  const api = await main('/api/latest');
+  assert.equal(api.status, 404, 'the main site has no release API');
+  assert.match(api.headers.get('content-type'), /json/);
+});
+
+test('static files: compression, caching headers, 304 and byte ranges', async () => {
+  const js = await main('/_astro/app.abc.js', { headers: { 'Accept-Encoding': 'gzip' } });
+  assert.equal(js.headers.get('content-encoding'), 'gzip');
+  assert.match(js.headers.get('cache-control'), /immutable/);
+  assert.equal((await js.text()).length, 'console.log(1);'.length * 200, 'fetch decodes gzip transparently');
+
+  const html = await pet('/');
+  assert.equal(html.headers.get('cache-control'), 'no-cache');
+  const again = await pet('/', { headers: { 'If-None-Match': html.headers.get('etag') } });
+  assert.equal(again.status, 304);
+
+  const url = (await getJson('/api/latest')).body.assets.windows.url.replace(/^https?:\/\/[^/]+/, '');
+  const part = await pet(url, { headers: { Range: 'bytes=4-' } });
+  assert.equal(part.status, 206);
+  assert.equal(await part.text(), release.files[`Aliya.Pet_${release.json('').tag_name.slice(1)}_x64-setup.exe`].subarray(4).toString());
+  assert.match(part.headers.get('content-disposition'), /attachment/);
 });

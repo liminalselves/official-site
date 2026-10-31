@@ -1,4 +1,4 @@
-import { writeFile } from 'node:fs/promises';
+import { cp, writeFile } from 'node:fs/promises';
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
@@ -8,6 +8,8 @@ const RELEASE_ORIGIN = 'http://127.0.0.1:8787';
 export default defineConfig({
   site: 'https://aliyapet.liminalselves.top',
   srcDir: './sites/aliyapet',
+  // Site-only files (Live2D embed, poster); the shared brand files in public/ are copied in below.
+  publicDir: './sites/aliyapet/public',
   outDir: './dist-aliyapet',
   trailingSlash: 'ignore',
   build: { format: 'directory' },
@@ -18,11 +20,12 @@ export default defineConfig({
       lastmod: new Date(),
     }),
     {
-      // public/ is shared with the main site; robots.txt must advertise this
-      // site's own sitemap, so it is rewritten after the copy step.
-      name: 'aliyapet-robots',
+      // Shared brand files (logo, fonts, icons) live in public/ with the main site; copy them
+      // in without overwriting this site's own files, then give robots.txt this site's sitemap.
+      name: 'aliyapet-shared-public',
       hooks: {
         'astro:build:done': async ({ dir }) => {
+          await cp(new URL('./public/', import.meta.url), dir, { recursive: true, force: false });
           await writeFile(
             new URL('robots.txt', dir),
             'User-agent: *\nAllow: /\n\nSitemap: https://aliyapet.liminalselves.top/sitemap-index.xml\n',

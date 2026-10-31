@@ -5,13 +5,12 @@
   "description": "阈界人格项目组官方网站",
   "type": "module",
   "scripts": {
+    "start": "node server/index.mjs",
+    "build": "astro build && astro build --config astro.aliyapet.config.mjs",
+    "serve": "npm run build && npm start",
     "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
     "dev:aliyapet": "astro dev --config astro.aliyapet.config.mjs",
-    "build:aliyapet": "astro build --config astro.aliyapet.config.mjs",
-    "preview:aliyapet": "astro preview --config astro.aliyapet.config.mjs",
-    "test:server": "node --test server/test/service.test.mjs",
+    "test": "node --test \"server/test/*.test.mjs\"",
     "assets": "node scripts/gen-assets.mjs",
     "font": "python scripts/subset-font.py"
   },

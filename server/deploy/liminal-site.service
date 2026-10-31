@@ -1,0 +1,23 @@
+# One service for both sites (main + Aliya Pet): pages, APIs and installer downloads.
+# Paths assume the deploy-server branch is checked out at /d/liminal-site (see README "部署").
+[Unit]
+Description=Liminal Selves sites (www + aliyapet)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/d/liminal-site
+ExecStart=/usr/bin/node /d/liminal-site/server/index.mjs
+Environment=HOST=127.0.0.1
+Environment=PORT=8787
+Environment=DATA_DIR=/var/lib/liminal-site
+# Optional: raises the GitHub API limit; a read-only token is enough.
+# Environment=GITHUB_TOKEN=
+DynamicUser=yes
+StateDirectory=liminal-site
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
