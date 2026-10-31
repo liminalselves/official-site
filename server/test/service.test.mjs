@@ -220,7 +220,12 @@ test('new release replaces the old one; bad digest is rejected; old versions pru
     await startService();
     await waitFor(async () => (await getJson('/healthz')).body.version === v);
   }
-  const kept = (await readdir(path.join(dataDir, 'releases'))).filter((n) => !n.startsWith('.')).sort();
+  // healthz updates on publish; pruning finishes right after, so wait for it to settle.
+  let kept;
+  await waitFor(async () => {
+    kept = (await readdir(path.join(dataDir, 'releases'))).filter((n) => !n.startsWith('.')).sort();
+    return kept.length === 2;
+  });
   assert.deepEqual(kept, ['0.3.0', '0.4.0']);
   const latest = await getJson('/api/latest');
   assert.equal(latest.body.minVersion, null);
