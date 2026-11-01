@@ -1,7 +1,6 @@
 # Production compose for the Liminal Selves sites (www + aliyapet). Copy to the server, then
 # update with:  docker-compose pull && docker-compose up -d
 # Nginx terminates HTTPS and proxies to 127.0.0.1:8787 (see nginx.conf in this directory).
-version: "3.8"
 
 services:
   site:
