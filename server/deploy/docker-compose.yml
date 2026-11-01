@@ -1,0 +1,18 @@
+# Production compose for the Liminal Selves sites (www + aliyapet). Copy to the server, then
+# update with:  docker-compose pull && docker-compose up -d
+# Nginx terminates HTTPS and proxies to 127.0.0.1:8787 (see nginx.conf in this directory).
+version: "3.8"
+
+services:
+  site:
+    image: ghcr.io/liminalselves/official-site:latest
+    container_name: liminal-site
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8787:8787"
+    environment:
+      # Optional: raises the GitHub API limit for release sync; a read-only token is enough.
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+    volumes:
+      # Release metadata and mirrored installers; owned by the image's node user (uid 1000).
+      - ./data:/data

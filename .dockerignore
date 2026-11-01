@@ -1,0 +1,10 @@
+node_modules
+dist
+dist-aliyapet
+.astro
+data
+.git
+.github
+.zcode
+server/test
+*.log
