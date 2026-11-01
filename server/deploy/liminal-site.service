@@ -14,7 +14,10 @@ Environment=PORT=8787
 Environment=DATA_DIR=/var/lib/liminal-site
 # Optional: raises the GitHub API limit; a read-only token is enough.
 # Environment=GITHUB_TOKEN=
-DynamicUser=yes
+# The same user that owns the other sites under /d on the server (宝塔 www). It only needs to read
+# the checkout and write DATA_DIR, which systemd creates and hands to it.
+User=www
+Group=www
 StateDirectory=liminal-site
 Restart=on-failure
 RestartSec=5

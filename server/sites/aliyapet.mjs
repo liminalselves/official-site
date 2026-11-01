@@ -6,8 +6,12 @@ import { compareVersions, parseVersion } from '../lib/release.mjs';
 import { createStaticSite, sendFile } from '../lib/static.mjs';
 import { safeName } from '../lib/sync.mjs';
 
-// Tauri reports {{target}}-{{arch}}; only the Windows NSIS installer is signed for in-place updates.
-const TAURI_TARGETS = { 'windows-x86_64': 'windows' };
+// Tauri reports {{target}}/{{arch}} and, from builds that request it, {{bundle_type}}. The update
+// must use the same installer the app was installed with: an MSI install updated with the NSIS
+// exe would leave two installs side by side. A build that cannot tell (`unknown`, or the old
+// four-segment path) gets the NSIS installer, the default download, so updates never stop.
+const TAURI_ASSETS = { 'windows-x86_64-nsis': 'windows', 'windows-x86_64-msi': 'windows-msi' };
+const TAURI_BUNDLES = new Set(['nsis', 'msi']);
 const CHECK_PLATFORMS = ['windows', 'android'];
 
 export function createAliyaPetSite({ sync, dist }) {
@@ -53,8 +57,9 @@ export function createAliyaPetSite({ sync, dist }) {
     }];
   }
 
-  function tauri(req, current, target, arch, version) {
-    const asset = current.assets[TAURI_TARGETS[`${target}-${arch}`]];
+  function tauri(req, current, target, arch, version, bundle = 'nsis') {
+    const installer = TAURI_BUNDLES.has(bundle) ? bundle : 'nsis';
+    const asset = current.assets[TAURI_ASSETS[`${target}-${arch}-${installer}`]];
     if (!asset?.signature || !parseVersion(version) || compareVersions(version, current.version) >= 0) return [204];
     return [200, {
       version: current.version,
@@ -100,7 +105,9 @@ export function createAliyaPetSite({ sync, dist }) {
     if (seg[0] === 'api' && seg[1] === 'releases' && seg.length === 2) return sendJson(res, 200, releases(current));
     if (seg[0] === 'api' && seg[1] === 'latest' && seg.length === 2) return sendJson(res, 200, latest(req, current));
     if (seg[0] === 'api' && seg[1] === 'check' && seg.length === 2) return sendJson(res, ...check(req, current, url.searchParams));
+    // /api/tauri/{target}/{arch}/{version}[/{bundle_type}]
     if (seg[0] === 'api' && seg[1] === 'tauri' && seg.length === 5) return sendJson(res, ...tauri(req, current, seg[2], seg[3], seg[4]));
+    if (seg[0] === 'api' && seg[1] === 'tauri' && seg.length === 6) return sendJson(res, ...tauri(req, current, seg[2], seg[3], seg[4], seg[5]));
     if (seg[0] === 'download' && seg.length === 2) {
       const asset = current.assets[seg[1]];
       if (!asset) return sendJson(res, 404, { error: 'unknown platform' });
