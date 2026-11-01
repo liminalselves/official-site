@@ -116,26 +116,24 @@ Release 说明来自 Aliya_pet 的 `CHANGELOG.md`，写法见那边的 `docs/CHA
 
 ## 部署
 
-push 到 main 后，GitHub Actions 会跑测试、构建两个站点，再把整套服务提交到 `deploy-server` 分支。这个分支包含 `server/`、`dist/` 和 `dist-aliyapet/`，服务器只跟踪它。
+push 到 main 后，GitHub Actions（`.github/workflows/docker.yml`）会先跑服务测试，再构建镜像并推送到 `ghcr.io/liminalselves/official-site`，标签是 `latest` 和提交号。镜像里有两站的页面和服务，服务端不需要 Node 或源码。
 
-`deploy` 分支是给旧部署用的，只有主站的静态页面。服务器切换到新服务后，就可以删掉 `deploy.yml` 里发布这个分支的那一段。
+服务器（aliyun）上的配置在 `/d/office-site`：
 
-首次部署（服务器需要 Node >= 20）：
-
-```bash
-sudo git clone -b deploy-server https://github.com/liminalselves/official-site /d/liminal-site
-sudo cp /d/liminal-site/server/deploy/liminal-site.service /etc/systemd/system/
-sudo systemctl daemon-reload && sudo systemctl enable --now liminal-site
-curl -s http://127.0.0.1:8787/healthz
-```
-
-然后配置 Nginx。示例在 `server/deploy/nginx.conf`：每个域名一个 server 块，只配证书，再加一句 `proxy_pass http://127.0.0.1:8787`。改完后执行 `nginx -t && nginx -s reload`。
+- `docker-compose.yml`：内容同 `server/deploy/docker-compose.yml`，容器只监听 `127.0.0.1:8787`。
+- `data/`：Release 同步数据和镜像下来的安装包，镜像更新时保留。
 
 以后每次更新：
 
 ```bash
-cd /d/liminal-site && sudo git pull && sudo systemctl restart liminal-site
+cd /d/office-site
+docker-compose pull
+docker-compose up -d
 ```
+
+aliyun 上的 admin 不在 docker 组，要加 `sudo`。
+
+Nginx（宝塔，`/www/server/nginx/conf/nginx.conf`）只负责 HTTPS，每个域名一个 server 块，把请求 `proxy_pass` 到 `127.0.0.1:8787`。示例在 `server/deploy/nginx.conf`，改完执行 `nginx -t && nginx -s reload`。
 
 ## 结构
 
@@ -144,7 +142,7 @@ server/
 ├── index.mjs           # 入口：按域名分站
 ├── lib/                # 静态文件、HTTP 工具、Release 同步
 ├── sites/              # main.mjs（主站）、aliyapet.mjs（Aliya Pet 页面 + 接口）
-├── deploy/             # systemd、Nginx 示例
+├── deploy/             # docker-compose、Nginx 示例
 └── test/
 src/                    # 主站：data/site.ts、layouts、components、scripts、styles、pages
 sites/aliyapet/         # Aliya Pet 站点（pages / components / layouts / data / scripts / public）
