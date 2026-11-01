@@ -5,4 +5,4 @@ dist-aliyapet/
 .astro/
 .DS_Store
 # Release service data when run locally (node server/index.mjs)
-data/
+/data/

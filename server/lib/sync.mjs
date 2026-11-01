@@ -5,7 +5,7 @@ import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promise
 import path from 'node:path';
 import { Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import { classifyAssets, compareVersions, parseNotes, parseVersion } from './release.mjs';
+import { PLATFORMS, classifyAssets, compareVersions, parseNotes, parseVersion } from './release.mjs';
 
 export class ReleaseSync {
   constructor({ dataDir, repo, apiBase, token, keepVersions, log = console }) {
@@ -23,18 +23,20 @@ export class ReleaseSync {
     this.running = null;
   }
 
+  /** Restore the last synced state. A missing or unreadable file only means "nothing synced yet":
+   *  the service must keep serving both sites, and the next sync rebuilds the file. */
   async load() {
-    try {
-      this.current = JSON.parse(await readFile(path.join(this.dataDir, 'current.json'), 'utf8'));
-      this.log.info(`[sync] serving ${this.current.version}`);
-    } catch (err) {
-      if (err.code !== 'ENOENT') throw err;
-    }
-    try {
-      this.history = JSON.parse(await readFile(path.join(this.dataDir, 'history.json'), 'utf8'));
-    } catch (err) {
-      if (err.code !== 'ENOENT') throw err;
-    }
+    const read = async (name) => {
+      try {
+        return JSON.parse(await readFile(path.join(this.dataDir, name), 'utf8'));
+      } catch (err) {
+        if (err.code !== 'ENOENT') this.log.error(`[sync] ignoring unreadable ${name}: ${err.message}`);
+        return null;
+      }
+    };
+    this.current = await read('current.json');
+    this.history = (await read('history.json')) ?? [];
+    if (this.current) this.log.info(`[sync] serving ${this.current.version}`);
   }
 
   /** Run one sync; concurrent callers share the in-flight run. */
@@ -89,10 +91,22 @@ export class ReleaseSync {
     const version = release.tag_name?.replace(/^v/, '');
     if (!parseVersion(version)) throw new Error(`latest release tag is not a version: ${release.tag_name}`);
     const assets = classifyAssets(release.assets ?? []);
-    if (!Object.keys(assets).length) throw new Error(`release ${version} has no installer assets yet`);
-    // Assets are uploaded after the release is created; wait until the signed Windows installer is there too.
-    if (assets.windows && !assets.windows.sigUrl && release.assets.some((a) => a.state !== 'uploaded')) {
+    // Every release ships all three installers. A release missing one is still being uploaded (files
+    // appear one at a time), so wait rather than serve it without that platform.
+    const missing = Object.keys(PLATFORMS).filter((k) => !assets[k]);
+    if (missing.length) throw new Error(`release ${version} is missing ${missing.join(', ')}`);
+    // A release is only taken once it is complete. CI creates the release first and uploads files
+    // into it, and `gh release create` uploads them one by one, so any file still uploading - or a
+    // Windows installer whose updater signature is not there yet - means "try again next sync".
+    // Taking it early would leave installed apps without a signed update until the files change.
+    if ((release.assets ?? []).some((a) => a.state !== 'uploaded')) {
       throw new Error(`release ${version} is still uploading`);
+    }
+    // v0.1.0 predates the updater and ships no .sig files; it is still served for downloads. From the
+    // first release that has any signature on, every Windows installer must be signed.
+    const signed = ['windows', 'windows-msi'].filter((k) => assets[k]?.sigUrl);
+    for (const key of ['windows', 'windows-msi']) {
+      if (signed.length && assets[key] && !assets[key].sigUrl) throw new Error(`release ${version}: ${assets[key].name} has no updater signature`);
     }
 
     const { notes, minVersion } = parseNotes(release.body);

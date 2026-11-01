@@ -37,8 +37,14 @@ async function handle(req, res) {
   if (req.method !== 'GET' && req.method !== 'HEAD' && req.method !== 'OPTIONS') {
     return sendJson(res, 405, { error: 'method not allowed' });
   }
+  if (RELEASE_API.test(url.pathname)) return sites.aliyapet(req, res, url);
   return sites[siteFor(requestHost(req))](req, res, url);
 }
+
+// The Aliya Pet release API answers on every host, because installed apps reach it through
+// whichever address their build points at (a mirror domain, an IP during an outage, localhost in
+// tests). Pages still follow the host; only these paths are shared.
+const RELEASE_API = /^\/(api\/(latest|releases|check|tauri)(\/|$)|download\/[^/]+$|files\/)/;
 
 await sync.load();
 const server = createServer((req, res) => {

@@ -12,13 +12,15 @@ import { classifyAssets, compareVersions, parseNotes } from '../lib/release.mjs'
 
 const sha = (buf) => createHash('sha256').update(buf).digest('hex');
 
-function makeRelease(version, { body = '', broken = false } = {}) {
+function makeRelease(version, { body = '', broken = false, uploading = [], omit = [] } = {}) {
   const files = {
     [`Aliya.Pet_${version}_x64-setup.exe`]: Buffer.from(`exe ${version}`),
     [`Aliya.Pet_${version}_x64-setup.exe.sig`]: Buffer.from(`sig-of-${version}\n`),
     [`Aliya.Pet_${version}_x64_zh-CN.msi`]: Buffer.from(`msi ${version}`),
+    [`Aliya.Pet_${version}_x64_zh-CN.msi.sig`]: Buffer.from(`msi-sig-of-${version}\n`),
     [`AliyaPet_v${version}.apk`]: Buffer.from(`apk ${version}`),
   };
+  for (const suffix of omit) for (const name of Object.keys(files)) if (name.endsWith(suffix)) delete files[name];
   return {
     files,
     json: (base) => ({
@@ -30,7 +32,7 @@ function makeRelease(version, { body = '', broken = false } = {}) {
       assets: Object.entries(files).map(([name, buf]) => ({
         name,
         size: buf.length,
-        state: 'uploaded',
+        state: uploading.some((suffix) => name.endsWith(suffix)) ? 'starter' : 'uploaded',
         digest: `sha256:${broken && name.endsWith('.apk') ? '0'.repeat(64) : sha(buf)}`,
         browser_download_url: `${base}/dl/${version}/${encodeURIComponent(name)}`,
       })),
@@ -190,6 +192,24 @@ test('/api/tauri returns signed update or 204', async () => {
   assert.equal((await getJson('/api/tauri/darwin/aarch64/0.1.0')).status, 204);
 });
 
+test('/api/tauri answers each install with its own installer type', async () => {
+  const nsis = await getJson('/api/tauri/windows/x86_64/0.1.0/nsis');
+  assert.equal(nsis.status, 200);
+  assert.match(nsis.body.url, /x64-setup\.exe$/);
+  assert.equal(nsis.body.signature, 'sig-of-0.2.0');
+
+  const msi = await getJson('/api/tauri/windows/x86_64/0.1.0/msi');
+  assert.equal(msi.status, 200, 'an MSI install must get the MSI, not the NSIS exe');
+  assert.match(msi.body.url, /\.msi$/);
+  assert.equal(msi.body.signature, 'msi-sig-of-0.2.0');
+  const file = await pet(new URL(msi.body.url).pathname);
+  assert.equal(Buffer.from(await file.arrayBuffer()).toString(), 'msi 0.2.0');
+
+  const unknown = await getJson('/api/tauri/windows/x86_64/0.1.0/unknown');
+  assert.match(unknown.body.url, /x64-setup\.exe$/, 'an undetected install type falls back to NSIS');
+  assert.equal((await getJson('/api/tauri/windows/x86_64/0.2.0/msi')).status, 204);
+});
+
 test('/download redirects and /files rejects traversal', async () => {
   const res = await pet('/download/windows-msi', { redirect: 'manual' });
   assert.equal(res.status, 302);
@@ -205,6 +225,19 @@ test('unchanged release answers 304 and keeps serving after restart', async () =
   await startService();
   await waitFor(() => apiCalls > before);
   assert.equal((await getJson('/healthz')).body.version, '0.2.0');
+});
+
+test('a release is not served until every file is uploaded and signed', async () => {
+  const restart = async () => { await stopService(); await startService(); await new Promise((r) => setTimeout(r, 400)); };
+  for (const [why, opts] of [
+    ['a file still uploading', { uploading: ['.msi.sig'] }],
+    ['the MSI updater signature missing', { omit: ['.msi.sig'] }],
+    ['the APK not uploaded yet', { omit: ['.apk'] }],
+  ]) {
+    release = makeRelease('0.3.0', opts);
+    await restart();
+    assert.equal((await getJson('/healthz')).body.version, '0.2.0', `must keep 0.2.0 with ${why}`);
+  }
 });
 
 test('new release replaces the old one; bad digest is rejected; old versions pruned', async () => {
@@ -249,9 +282,15 @@ test('host picks the site; directories, 404 pages and dotfiles behave like Nginx
   assert.equal((await pet('/.secret')).status, 404);
   assert.equal((await pet('/..%2F..%2Fpackage.json')).status, 404);
 
-  const api = await main('/api/latest');
-  assert.equal(api.status, 404, 'the main site has no release API');
-  assert.match(api.headers.get('content-type'), /json/);
+  // Installed apps reach the release API through whatever address their build points at, so it
+  // answers on every host; pages still follow the host.
+  for (const host of ['www.example.com', '127.0.0.1', 'cdn.example.net']) {
+    const r = await fetch(`${base}/api/check?platform=windows&version=0.1.0`, { headers: { 'X-Forwarded-Host': host } });
+    assert.equal(r.status, 200, `release API on ${host}`);
+  }
+  assert.equal((await main('/download/')).status, 404, 'the download page itself stays on the Aliya Pet site');
+  assert.equal((await main('/api/unknown')).status, 404);
+  assert.match((await main('/api/unknown')).headers.get('content-type'), /json/);
 });
 
 test('static files: compression, caching headers, 304 and byte ranges', async () => {
