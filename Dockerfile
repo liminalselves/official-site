@@ -1,14 +1,14 @@
 # One image for both sites: the Node service (server/) plus the two built Astro sites.
 # The service uses only Node built-ins, so the runtime stage ships no node_modules.
 
-FROM node:22.12-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM node:22.12-alpine
+FROM node:22-alpine
 WORKDIR /app
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
