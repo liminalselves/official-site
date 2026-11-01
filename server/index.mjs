@@ -23,6 +23,9 @@ const config = {
   token: process.env.GITHUB_TOKEN || undefined,
   intervalMs: Number(process.env.SYNC_INTERVAL_MINUTES ?? 10) * 60_000,
   keepVersions: Number(process.env.KEEP_VERSIONS ?? 2),
+  // Optional prefix for GitHub file downloads (e.g. https://ghfast.top/) where github.com is slow.
+  // Every file is still checked against GitHub's sha256, so a proxy cannot swap an installer.
+  downloadProxy: process.env.GITHUB_DOWNLOAD_PROXY || '',
 };
 
 const sync = new ReleaseSync({ ...config, log: { info: console.log, error: console.error } });

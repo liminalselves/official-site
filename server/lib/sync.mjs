@@ -8,13 +8,14 @@ import { pipeline } from 'node:stream/promises';
 import { PLATFORMS, classifyAssets, compareVersions, parseNotes, parseVersion } from './release.mjs';
 
 export class ReleaseSync {
-  constructor({ dataDir, repo, apiBase, token, keepVersions, log = console }) {
+  constructor({ dataDir, repo, apiBase, token, keepVersions, downloadProxy = '', log = console }) {
     this.dataDir = dataDir;
     this.releasesDir = path.join(dataDir, 'releases');
     this.repo = repo;
     this.apiBase = apiBase.replace(/\/$/, '');
     this.token = token;
     this.keepVersions = keepVersions;
+    this.downloadProxy = downloadProxy;
     this.log = log;
     this.current = null;
     this.history = [];
@@ -144,11 +145,11 @@ export class ReleaseSync {
     const headers = { 'User-Agent': apiHeaders['User-Agent'] };
     const files = {};
     for (const [platform, asset] of Object.entries(assets)) {
-      const sha256 = await download(asset.url, path.join(staging, safeName(asset.name)), headers);
+      const sha256 = await download(this.downloadProxy + asset.url, path.join(staging, safeName(asset.name)), headers);
       if (asset.digest && asset.digest !== sha256) throw new Error(`${asset.name}: sha256 mismatch`);
       const entry = { name: asset.name, size: asset.size, sha256 };
       if (asset.sigUrl) {
-        const res = await fetch(asset.sigUrl, { headers, signal: AbortSignal.timeout(60_000) });
+        const res = await fetch(this.downloadProxy + asset.sigUrl, { headers, signal: AbortSignal.timeout(60_000) });
         if (!res.ok) throw new Error(`${asset.name}.sig: HTTP ${res.status}`);
         entry.signature = (await res.text()).trim();
       }

@@ -13,6 +13,9 @@ services:
     environment:
       # Optional: raises the GitHub API limit for release sync; a read-only token is enough.
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      # Optional: prefix for GitHub file downloads where github.com is slow (aliyun: ~30 KB/s).
+      # Files are still checked against GitHub's sha256.
+      GITHUB_DOWNLOAD_PROXY: ${GITHUB_DOWNLOAD_PROXY:-https://ghfast.top/}
     volumes:
       # Release metadata and mirrored installers; owned by the image's node user (uid 1000).
       - ./data:/data

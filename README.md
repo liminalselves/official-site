@@ -105,6 +105,7 @@ Release 说明来自 Aliya_pet 的 `CHANGELOG.md`，写法见那边的 `docs/CHA
 | `MAIN_DIST` | `dist` | 主站页面目录 |
 | `ALIYAPET_DIST` | `dist-aliyapet` | Aliya Pet 页面目录 |
 | `GITHUB_TOKEN` | 无 | 可选，用于提高 GitHub API 的访问限额 |
+| `GITHUB_DOWNLOAD_PROXY` | 无 | 可选，GitHub 文件下载加速前缀（如 `https://ghfast.top/`）。下载后仍按 GitHub 的 sha256 校验 |
 | `SYNC_INTERVAL_MINUTES` | 10 | 同步间隔 |
 | `KEEP_VERSIONS` | 2 | 保留几个版本的安装包 |
 
