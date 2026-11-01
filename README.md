@@ -69,6 +69,7 @@ Aliya Pet 首页上的 Aliya 运行的是桌宠本体的 Live2D 模型和互动�
 - 模型加载完成前，以及设备不支持 WebGL2 时，显示静态图。
 - 页面上的鼠标位置会转发给嵌入页，所以视线会跟随整个页面上的光标。
 - 嵌入构建的说明见 Aliya_pet 仓库的 `docs/EMBED.md`。
+- 主站 Aliya Pet 项目卡：线框显示器里的桌面，Aliya 站在任务栏上（用 `public/pet-poster/aliya.webp`，与发布页占位图共用），动画为纯 CSS。
 
 模型、台词或互动有改动后，重新同步：
 
