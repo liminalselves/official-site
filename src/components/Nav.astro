@@ -62,7 +62,7 @@ const rel = (href: string) => (/^https?:/.test(href) ? 'noopener' : undefined);
       </ul>
     </nav>
     {cta && (
-      <a class="nav__cta" href={cta.href} data-sibling={cta.sibling} rel={rel(cta.href)}>
+      <a class="nav__cta" href={cta.href} data-sibling={cta.sibling} rel={rel(cta.href)} aria-current={cta.active ? 'page' : undefined}>
         {cta.label}
         {/^https?:/.test(cta.href) && <span aria-hidden="true">↗</span>}
       </a>
@@ -139,7 +139,8 @@ const rel = (href: string) => (/^https?:/.test(href) ? 'noopener' : undefined);
     border-radius: 999px;
     transition: background 0.3s, color 0.3s;
   }
-  .nav__cta:hover { background: var(--paper); color: var(--ink); }
+  .nav__cta:hover,
+  .nav__cta[aria-current='page'] { background: var(--paper); color: var(--ink); }
 
   @media (max-width: 860px) {
     .nav__en { display: none; }

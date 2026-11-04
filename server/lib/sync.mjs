@@ -5,7 +5,7 @@ import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promise
 import path from 'node:path';
 import { Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import { PLATFORMS, classifyAssets, compareVersions, parseNotes, parseVersion } from './release.mjs';
+import { PLATFORMS, classifyAssets, compareVersions, countDownloads, parseNotes, parseVersion } from './release.mjs';
 
 export class ReleaseSync {
   constructor({ dataDir, repo, apiBase, token, keepVersions, downloadProxy = '', log = console }) {
@@ -57,7 +57,8 @@ export class ReleaseSync {
     return headers;
   }
 
-  /** Text-only list of every published version for the changelog page; no files are mirrored. */
+  /** Text-only list of every published version for the changelog page, with GitHub's download
+   *  counts per platform; no files are mirrored. */
   async #syncHistory() {
     const headers = this.#headers();
     if (this.historyEtag) headers['If-None-Match'] = this.historyEtag;
@@ -69,7 +70,10 @@ export class ReleaseSync {
       .map((r) => {
         const { notes, minVersion } = parseNotes(r.body);
         const version = r.tag_name.replace(/^v/, '');
-        return { version, name: r.name || `Aliya Pet ${version}`, publishedAt: r.published_at, notes, minVersion, releaseUrl: r.html_url };
+        return {
+          version, name: r.name || `Aliya Pet ${version}`, publishedAt: r.published_at, notes, minVersion, releaseUrl: r.html_url,
+          downloads: countDownloads(r.assets ?? []),
+        };
       })
       .sort((a, b) => compareVersions(b.version, a.version));
     const file = path.join(this.dataDir, 'history.json');

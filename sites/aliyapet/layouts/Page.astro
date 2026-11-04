@@ -24,7 +24,7 @@ const nav = navLinks.map((l) => ({ ...l, active: isActiveNav(l.href, Astro.url.p
     brandSibling="www"
     brandAria="返回阈界人格官网"
     links={nav}
-    cta={{ label: '下载', href: '/download/' }}
+    cta={{ label: '下载', href: '/download/', active: isActiveNav('/download/', Astro.url.pathname) }}
     paged
   />
   <main id="main">
@@ -37,7 +37,10 @@ const nav = navLinks.map((l) => ({ ...l, active: isActiveNav(l.href, Astro.url.p
     cols={[
       {
         heading: '本站',
-        links: navLinks.filter((l) => l.href !== '/').map((l) => ({ label: l.label, href: l.href })),
+        links: [
+          ...navLinks.filter((l) => l.href !== '/').map((l) => ({ label: l.label, href: l.href })),
+          { label: '下载', href: '/download/' },
+        ],
       },
       {
         heading: '项目',

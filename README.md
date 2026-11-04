@@ -86,9 +86,11 @@ node scripts/sync-pet-embed.mjs <Aliya_pet>/redesign/ui/dist-embed
 
 Release 说明来自 Aliya_pet 的 `CHANGELOG.md`，写法见那边的 `docs/CHANGELOG-GUIDE.md`。接口返回的链接都用请求时的域名。
 
+下载量 = GitHub 上所有版本的下载次数 + 本站 `/files/` 的完整下载次数（断点续传和 HEAD 不计），后者存在 `DATA_DIR/downloads.json`。下载页按访问设备把对应安装包放在第一位并标「推荐」；iOS、iPadOS、macOS、Linux 等没有安装包的系统，第一位显示「当前设备暂不支持」（`sites/aliyapet/scripts/download.ts`）。
+
 | 接口 | 用途 |
 | --- | --- |
-| `GET /api/latest` | 下载页用：版本号、日期、更新日志，以及各平台文件的大小、sha256 和地址 |
+| `GET /api/latest` | 下载页用：版本号、日期、更新日志，各平台文件的大小、sha256 和地址，以及累计下载量 `downloads` |
 | `GET /api/releases` | 更新日志页用：所有已发布版本，新版本在前 |
 | `GET /api/check?platform=windows\|android&version=x.y.z` | 客户端启动时检查：有没有更新、是否强制更新、下载地址 |
 | `GET /api/tauri/{target}/{arch}/{version}` | Tauri updater 用：返回 204，或已签名的安装包信息 |

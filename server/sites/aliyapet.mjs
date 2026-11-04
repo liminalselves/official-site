@@ -14,7 +14,7 @@ const TAURI_ASSETS = { 'windows-x86_64-nsis': 'windows', 'windows-x86_64-msi': '
 const TAURI_BUNDLES = new Set(['nsis', 'msi']);
 const CHECK_PLATFORMS = ['windows', 'android'];
 
-export function createAliyaPetSite({ sync, dist }) {
+export function createAliyaPetSite({ sync, stats, dist }) {
   const pages = createStaticSite(dist);
   const fileUrl = (req, version, asset) => `${origin(req)}/files/${version}/${encodeURIComponent(asset.name)}`;
 
@@ -24,7 +24,7 @@ export function createAliyaPetSite({ sync, dist }) {
       assets[platform] = { name: a.name, size: a.size, sha256: a.sha256, url: fileUrl(req, current.version, a) };
     }
     const { version, name, publishedAt, notes, minVersion, releaseUrl } = current;
-    return { version, name, publishedAt, notes, minVersion, releaseUrl, assets };
+    return { version, name, publishedAt, notes, minVersion, releaseUrl, assets, downloads: stats.totals(sync.history) };
   }
 
   /** Every published version, newest first; the served version also carries the mirrored text. */
@@ -75,13 +75,16 @@ export function createAliyaPetSite({ sync, dist }) {
     try {
       if (!parseVersion(version)) throw new Error('bad version');
       file = path.join(sync.releasesDir, version, safeName(name));
-      return await sendFile(req, res, file, {
+      await sendFile(req, res, file, {
         cache: 'public, max-age=31536000, immutable',
         headers: { 'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(name)}` },
       });
     } catch {
       return sendJson(res, 404, { error: 'not found' });
     }
+    // One download per full fetch: resumed ranges and HEAD probes are not new downloads.
+    const resumed = /^bytes=(?!0-)/.test(req.headers.range ?? '');
+    if (req.method === 'GET' && res.statusCode < 300 && !resumed) stats.add(name);
   }
 
   return async function handle(req, res, url) {

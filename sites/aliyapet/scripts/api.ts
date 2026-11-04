@@ -15,6 +15,8 @@ export interface ReleaseAsset {
 
 export interface LatestRelease extends Omit<Release, 'latest'> {
   assets: Partial<Record<string, ReleaseAsset>>;
+  /** All-time downloads per platform, across every version. */
+  downloads?: Partial<Record<string, number>>;
 }
 
 const cache = new Map<string, Promise<unknown>>();

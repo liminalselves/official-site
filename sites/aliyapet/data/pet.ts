@@ -18,49 +18,43 @@ export interface Platform {
   key: AssetKey;
   /** Card title on the download page. */
   title: string;
-  /** Checksum row label. */
-  short: string;
-  /** Platform requirements shown under the title. */
+  /** System requirements shown under the title. */
   note: string;
-  /** Button text, also used as the size-label prefix at runtime. */
+  /** Button text. */
   label: string;
   /** Inline install tip shown on the card. */
   tip?: string;
-  recommended?: boolean;
 }
 
+/** Download cards in their default order; the page moves the one matching the visitor's device to the front. */
 export const platforms: Platform[] = [
   {
     key: 'windows',
     title: 'Windows 安装程序',
-    short: 'Windows',
     note: 'Windows 10 及以上 · x64 · EXE',
     label: '下载 Windows 版',
-    tip: '首次运行时 SmartScreen 可能提示「未知发布者」：点「更多信息」，再点「仍要运行」即可继续。',
-    recommended: true,
-  },
-  {
-    key: 'windows-msi',
-    title: 'Windows MSI',
-    short: 'MSI',
-    note: 'Windows 10 及以上 · x64 · MSI',
-    label: '下载 MSI 安装包',
-    tip: '适合批量部署等场景，一般用户选择安装程序即可。',
+    tip: '首次运行时 SmartScreen 可能提示「未知发布者」：点「更多信息」，再点「仍要运行」即可继续。缺少 WebView2 运行时会自动安装。',
   },
   {
     key: 'android',
     title: 'Android APK',
-    short: 'Android',
     note: 'Android 8.0 及以上 · APK',
     label: '下载 Android 版',
     tip: '安装前请在系统设置中允许该来源安装未知应用。',
   },
+  {
+    key: 'windows-msi',
+    title: 'Windows MSI',
+    note: 'Windows 10 及以上 · x64 · MSI',
+    label: '下载 MSI 安装包',
+    tip: '适合批量部署等场景，一般用户选择安装程序即可。',
+  },
 ];
 
+/** Header links; 下载 is the nav's call-to-action button, so it is not repeated here. */
 export const navLinks = [
   { label: '首页', href: '/' },
   { label: '功能', href: '/features/' },
-  { label: '下载', href: '/download/' },
   { label: '更新日志', href: '/changelog/' },
   { label: '常见问题', href: '/faq/' },
 ];
@@ -80,11 +74,6 @@ export const features = [
   { name: '自动更新', en: 'Auto Update', desc: '每次启动自动检查更新，Windows 版可在应用内一键更新。' },
 ];
 
-export const requirements = [
-  { platform: 'Windows', items: ['Windows 10 及以上（x64）', '需要 WebView2 运行时，安装程序会自动安装'] },
-  { platform: 'Android', items: ['Android 8.0 及以上'] },
-];
-
 export const faqs = [
   {
     q: '安装 Windows 版时提示「未知发布者」，怎么办？',
@@ -97,10 +86,6 @@ export const faqs = [
   {
     q: '如何更新到新版本？',
     a: '应用每次启动时会自动检查更新，有新版本时 Windows 版可在应用内一键更新。',
-  },
-  {
-    q: '如何校验安装包？',
-    a: '在 PowerShell 中运行 Get-FileHash 加安装包文件名，把输出结果与下载页上的 SHA-256 校验值核对。',
   },
   {
     q: '聊天需要什么账号？',

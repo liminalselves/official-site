@@ -40,6 +40,15 @@ export function classifyAssets(assets) {
   return result;
 }
 
+/** GitHub's download count per platform for one release's assets. */
+export function countDownloads(assets) {
+  const result = {};
+  for (const [platform, pattern] of Object.entries(PLATFORMS)) {
+    result[platform] = assets.filter((a) => pattern.test(a.name)).reduce((sum, a) => sum + (a.download_count ?? 0), 0);
+  }
+  return result;
+}
+
 const MIN_VERSION = /<!--\s*min-version:\s*(v?\d+\.\d+\.\d+)\s*-->/i;
 
 /** Split a release body into user-facing notes and the optional minimum supported version. */

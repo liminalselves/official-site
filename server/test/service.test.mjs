@@ -33,6 +33,7 @@ function makeRelease(version, { body = '', broken = false, uploading = [], omit 
         name,
         size: buf.length,
         state: uploading.some((suffix) => name.endsWith(suffix)) ? 'starter' : 'uploaded',
+        download_count: name.endsWith('.apk') ? 7 : name.endsWith('.exe') ? 5 : 1,
         digest: `sha256:${broken && name.endsWith('.apk') ? '0'.repeat(64) : sha(buf)}`,
         browser_download_url: `${base}/dl/${version}/${encodeURIComponent(name)}`,
       })),
@@ -157,6 +158,20 @@ test('/api/latest describes mirrored files on the requesting host', async () => 
   assert.equal(body.notes, '## 0.2.0\n- 新功能');
   assert.equal(body.assets.android.url, 'https://aliyapet.example.com/files/0.2.0/AliyaPet_v0.2.0.apk');
   assert.equal(body.assets.windows.sha256, sha(release.files['Aliya.Pet_0.2.0_x64-setup.exe']));
+});
+
+test('download counts add GitHub totals to full local downloads only', async () => {
+  const counts = async () => (await getJson('/api/latest')).body.downloads;
+  const start = await counts();
+  // .sig files are not installers: the MSI total is the MSI's own count, not MSI + signature.
+  assert.ok(start.android >= 7 && start.windows >= 5 && start['windows-msi'] >= 1);
+
+  const apk = (await getJson('/api/latest')).body.assets.android.url.replace(/^https?:\/\/[^/]+/, '');
+  await (await pet(apk)).arrayBuffer();
+  await (await pet(apk, { headers: { Range: 'bytes=3-' } })).arrayBuffer();
+  await pet(apk, { method: 'HEAD' });
+  await (await pet('/files/0.2.0/missing.apk')).arrayBuffer();
+  assert.equal((await counts()).android, start.android + 1, 'resumed ranges, HEAD and 404s are not downloads');
 });
 
 test('/api/releases lists published versions newest first', async () => {

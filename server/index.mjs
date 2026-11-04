@@ -6,6 +6,7 @@ import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { requestHost, sendJson, siteFor } from './lib/http.mjs';
+import { DownloadStats } from './lib/downloads.mjs';
 import { ReleaseSync } from './lib/sync.mjs';
 import { createAliyaPetSite } from './sites/aliyapet.mjs';
 import { createMainSite } from './sites/main.mjs';
@@ -28,10 +29,12 @@ const config = {
   downloadProxy: process.env.GITHUB_DOWNLOAD_PROXY || '',
 };
 
-const sync = new ReleaseSync({ ...config, log: { info: console.log, error: console.error } });
+const log = { info: console.log, error: console.error };
+const sync = new ReleaseSync({ ...config, log });
+const stats = new DownloadStats({ dataDir: config.dataDir, log });
 const sites = {
   main: createMainSite({ dist: config.mainDist }),
-  aliyapet: createAliyaPetSite({ sync, dist: config.aliyapetDist }),
+  aliyapet: createAliyaPetSite({ sync, stats, dist: config.aliyapetDist }),
 };
 
 async function handle(req, res) {
@@ -49,7 +52,7 @@ async function handle(req, res) {
 // tests). Pages still follow the host; only these paths are shared.
 const RELEASE_API = /^\/(api\/(latest|releases|check|tauri)(\/|$)|download\/[^/]+$|files\/)/;
 
-await sync.load();
+await Promise.all([sync.load(), stats.load()]);
 const server = createServer((req, res) => {
   handle(req, res).catch((err) => {
     console.error(err);
